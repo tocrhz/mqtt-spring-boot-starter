@@ -57,7 +57,7 @@ public class MqttMessageHandler {
     @MqttSubscribe("test/{id}")
     public void sub(String topic, @NamedValue("id") String id, @Payload UserInfo userInfo) {
         logger.info("receive from   : {}", topic);
-        logger.info("named value id : {}", payload);
+        logger.info("named value id : {}", id);
         logger.info("object payload : {}", userInfo);
     }
 
