@@ -55,7 +55,7 @@ public class MqttMessageHandler {
      * pattern = ^test/([^/]+)$
      */
     @MqttSubscribe("test/{id}")
-    public void sub(String topic, @Named("id") String id, @Payload UserInfo userInfo) {
+    public void sub(String topic, @NamedValue("id") String id, @Payload UserInfo userInfo) {
         logger.info("receive from   : {}", topic);
         logger.info("named value id : {}", payload);
         logger.info("object payload : {}", payload);
