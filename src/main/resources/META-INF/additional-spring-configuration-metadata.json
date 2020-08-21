@@ -1,0 +1,105 @@
+{
+  "groups": [
+    {
+      "name": "mqtt",
+      "type": "com.github.tocrhz.mqtt.autoconfigure.MqttProperties",
+      "sourceType": "com.github.tocrhz.mqtt.autoconfigure.MqttProperties",
+      "description": "MQTT配置."
+    },
+    {
+      "name": "mqtt.will",
+      "type": "com.github.tocrhz.mqtt.autoconfigure.MqttProperties$WillProperties",
+      "sourceType": "com.github.tocrhz.mqtt.autoconfigure.MqttProperties",
+      "sourceMethod": "getWill()",
+      "description": "遗愿相关配置."
+    }
+  ],
+  "properties": [
+    {
+      "name": "mqtt.disable",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "是否禁用."
+    },
+    {
+      "name": "mqtt.uri",
+      "type": "java.lang.String[]",
+      "defaultValue": "tcp://127.0.0.1:1883",
+      "description": "MQTT服务器地址, 可以配置多个."
+    },
+    {
+      "name": "mqtt.client-id",
+      "type": "java.lang.String",
+      "description": "客户端ID, 默认为MqttAsyncClient.generateClientId()."
+    },
+    {
+      "name": "mqtt.username",
+      "type": "java.lang.String",
+      "description": "用户名."
+    },
+    {
+      "name": "mqtt.password",
+      "type": "java.lang.String",
+      "description": "密码."
+    },
+    {
+      "name": "mqtt.max-reconnect-delay",
+      "type": "java.lang.Integer",
+      "description": "最大重连等待时间.",
+      "defaultValue": 30
+    },
+    {
+      "name": "mqtt.keep-alive-interval",
+      "type": "java.lang.Integer",
+      "description": "KeepAlive 周期.",
+      "defaultValue": 30
+    },
+    {
+      "name": "mqtt.connection-timeout",
+      "type": "java.lang.Integer",
+      "description": "连接超时时间.",
+      "defaultValue": 30
+    },
+    {
+      "name": "mqtt.executor-service-timeout",
+      "type": "java.lang.Integer",
+      "description": "发送超时时间.",
+      "defaultValue": 10
+    },
+    {
+      "name": "mqtt.clean-session",
+      "type": "java.lang.Boolean",
+      "description": "是否清除会话.",
+      "defaultValue": true
+    },
+    {
+      "name": "mqtt.automatic-reconnect",
+      "type": "java.lang.Boolean",
+      "description": "断开是否重新连接.",
+      "defaultValue": true
+    },
+    {
+      "name": "mqtt.will.topic",
+      "type": "java.lang.String",
+      "description": "遗愿主题."
+    },
+    {
+      "name": "mqtt.will.payload",
+      "type": "java.lang.String",
+      "description": "遗愿消息内容.",
+      "defaultValue": "default will msg."
+    },
+    {
+      "name": "mqtt.will.qos",
+      "type": "java.lang.Integer",
+      "description": "遗愿消息QOS.",
+      "defaultValue": 0
+    },
+    {
+      "name": "mqtt.will.retained",
+      "type": "java.lang.Boolean",
+      "description": "遗愿消息是否保留.",
+      "defaultValue": false
+    }
+  ]
+}
