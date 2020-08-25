@@ -45,8 +45,7 @@ public class TopicPair {
     }
 
     private static Pattern toPattern(String topic, LinkedList<String> params, HashMap<String, Class<?>> paramTypeMap) {
-        String pattern = topic.replace("+", "[^/]+")
-                .replace("$", "\\$");
+        String pattern = replaceSymbols(topic);
         Matcher matcher = TO_PATTERN.matcher(pattern);
         StringBuffer buffer = new StringBuffer("^");
         while (matcher.find()) {
@@ -115,4 +114,31 @@ public class TopicPair {
         return this.pattern == null ? 1 : -params.length;
     }
 
+    private static String replaceSymbols(String topic) {
+        StringBuilder sb = new StringBuilder();
+        char[] chars = topic.toCharArray();
+        for (char ch : chars) {
+            switch (ch) {
+                case '$':
+                case '^':
+                case '.':
+                case '?':
+                case '*':
+                case '|':
+                case '(':
+                case ')':
+                case '[':
+                case ']':
+                case '\\':
+                    sb.append('\\').append(ch);
+                    break;
+                case '+':
+                    sb.append("[^/]+");
+                    break;
+                default:
+                    sb.append(ch);
+            }
+        }
+        return sb.toString();
+    }
 }

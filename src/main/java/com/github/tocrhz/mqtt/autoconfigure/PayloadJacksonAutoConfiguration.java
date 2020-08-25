@@ -156,7 +156,7 @@ public class PayloadJacksonAutoConfiguration extends PayloadAutoConfiguration {
                 if (value == null) {
                     gen.writeNull();
                 } else {
-                    gen.writeString(DATE_FORMATTER.format(value.toInstant().atZone(ZONE_ID)));
+                    gen.writeString(DATE_TIME_FORMATTER.format(value.toInstant().atZone(ZONE_ID)));
                 }
             }
         };
