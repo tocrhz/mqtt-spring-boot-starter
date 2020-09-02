@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>1.0.1.RELEASE</version>
+    <version>1.1.0</version>
     <name>mqtt-spring-boot-starter</name>
     <description>MQTT starter for Spring Boot, easier to use.</description>
 
@@ -48,6 +48,7 @@
         <slf4j.version>1.7.30</slf4j.version>
         <paho.mqttv3.version>1.2.5</paho.mqttv3.version>
         <jackson.version>2.11.2</jackson.version>
+        <lombok.version>1.18.12</lombok.version>
     </properties>
 
     <dependencies>
@@ -62,6 +63,7 @@
             <version>${paho.mqttv3.version}</version>
         </dependency>
 
+        <!-- spring-boot: 1.5.x ~ 2.3.x -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
@@ -86,6 +88,14 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <!-- compile: lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>compile</scope>
             <optional>true</optional>
         </dependency>
     </dependencies>

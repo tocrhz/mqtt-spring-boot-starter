@@ -15,6 +15,8 @@ import java.lang.annotation.Target;
 public @interface NamedValue {
     /**
      * Parameter name.
+     *
+     * @return Parameter name.
      */
     String value();
 }

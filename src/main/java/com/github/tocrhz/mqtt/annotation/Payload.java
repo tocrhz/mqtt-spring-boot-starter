@@ -25,6 +25,8 @@ public @interface Payload {
      * <p>
      * If the result is the same as the target type after the execution in sequence, it is directly assigned,
      * if it is different, MqttConversionService is called for conversion.
+     *
+     * @return Converter
      */
     Class<? extends Converter<?, ?>>[] value() default {};
 }

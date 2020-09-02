@@ -1,7 +1,7 @@
 package com.github.tocrhz.mqtt.publisher;
 
 import com.github.tocrhz.mqtt.autoconfigure.MqttConversionService;
-import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
+import org.eclipse.paho.client.mqttv3.IMqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +14,9 @@ import org.springframework.util.Assert;
  */
 public class MqttPublisher {
     private final static Logger log = LoggerFactory.getLogger(MqttPublisher.class);
-    private final MqttAsyncClient client;
+    private final IMqttAsyncClient client;
 
-    public MqttPublisher(MqttAsyncClient client) {
+    public MqttPublisher(IMqttAsyncClient client) {
         this.client = client;
     }
 

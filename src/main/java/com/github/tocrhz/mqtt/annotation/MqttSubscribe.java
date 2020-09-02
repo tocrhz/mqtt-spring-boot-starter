@@ -15,6 +15,8 @@ import java.lang.annotation.Target;
 public @interface MqttSubscribe {
     /**
      * topics
+     *
+     * @return topics
      */
     String[] value();
 
@@ -22,6 +24,15 @@ public @interface MqttSubscribe {
      * QOS for topic one-to-one.
      * <p>
      * If not one-to-one. fill by last qos and ignore the superfluous.
+     *
+     * @return QOSs
      */
     int[] qos() default 1;
+
+    /**
+     * clientId
+     *
+     * @return clientId, default all client
+     */
+    String client() default "";
 }

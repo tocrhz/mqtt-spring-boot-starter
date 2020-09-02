@@ -1,11 +1,11 @@
 package com.github.tocrhz.mqtt.autoconfigure;
 
+import com.github.tocrhz.mqtt.properties.MqttProperties;
 import com.github.tocrhz.mqtt.publisher.MqttPublisher;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -29,9 +29,21 @@ import org.springframework.core.annotation.Order;
 @Configuration
 public class MqttAutoConfiguration {
 
+
     public MqttAutoConfiguration(ListableBeanFactory beanFactory) {
         // register converters
         MqttConversionService.addBeans(MqttConversionService.getSharedInstance(), beanFactory);
+    }
+    public static void initialization(MqttProperties properties) {
+        properties.forEach((id, options) -> {
+            try {
+                MqttAsyncClient client = newMqttClient(id, options.getServerURIs());
+                MQTT_OPTIONS_MAP.put(id, options);
+                MQTT_CLIENT_MAP.put(id, client);
+            } catch (MqttException exception) {
+                exception.printStackTrace();
+            }
+        });
     }
 
     /**
@@ -43,7 +55,7 @@ public class MqttAutoConfiguration {
     public MqttConnectOptionsAdapter mqttConnectOptionsAdapter() {
         return new MqttConnectOptionsAdapter() {
             @Override
-            protected void configure(MqttConnectOptions options) {
+            protected void configure(String clientId, MqttConnectOptions options) {
             }
         };
     }
@@ -53,9 +65,11 @@ public class MqttAutoConfiguration {
      */
     @Bean
     @Order(1010)
-    @ConditionalOnMissingBean(MqttClientPersistence.class)
-    public MqttClientPersistence mqttClientPersistence() {
-        return new MemoryPersistence();
+    @ConditionalOnMissingBean(MqttClientWrapper.class)
+    public MqttClientWrapper mqttClientWrapper(MqttProperties properties) {
+        MqttClientWrapper wrapper = new MqttClientWrapper();
+
+        return wrapper;
     }
 
     /**
@@ -64,8 +78,8 @@ public class MqttAutoConfiguration {
     @Bean
     @Order(1013)
     @ConditionalOnMissingBean(MqttPublisher.class)
-    public MqttPublisher mqttPublisher(MqttProperties properties, MqttClientPersistence persistence) throws MqttException {
-        return new MqttPublisher(clientInstance(properties, persistence));
+    public MqttPublisher mqttPublisher(MqttClientWrapper clientWrapper) throws MqttException {
+        return new MqttPublisher(clientWrapper);
     }
 
     /**
@@ -80,20 +94,5 @@ public class MqttAutoConfiguration {
         MqttConnector connector = new MqttConnector(clientInstance(properties, persistence), properties, adapter);
         connector.start();
         return connector;
-    }
-
-    /**
-     * mqtt client
-     */
-    private static MqttAsyncClient client = null;
-
-    /**
-     * get or create MqttAsyncClient
-     */
-    public static synchronized MqttAsyncClient clientInstance(MqttProperties properties, MqttClientPersistence persistence) throws MqttException {
-        if (client == null) {
-            client = new MqttAsyncClient(properties.getUri()[0], properties.getClientId(), persistence);
-        }
-        return client;
     }
 }

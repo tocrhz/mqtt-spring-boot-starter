@@ -2,14 +2,14 @@
   "groups": [
     {
       "name": "mqtt",
-      "type": "com.github.tocrhz.mqtt.autoconfigure.MqttProperties",
-      "sourceType": "com.github.tocrhz.mqtt.autoconfigure.MqttProperties",
+      "type": "com.github.tocrhz.mqtt.properties.MqttProperties",
+      "sourceType": "com.github.tocrhz.mqtt.properties.MqttProperties",
       "description": "MQTT配置."
     },
     {
       "name": "mqtt.will",
-      "type": "com.github.tocrhz.mqtt.autoconfigure.MqttProperties$WillProperties",
-      "sourceType": "com.github.tocrhz.mqtt.autoconfigure.MqttProperties",
+      "type": "com.github.tocrhz.mqtt.properties.WillProperties",
+      "sourceType": "com.github.tocrhz.mqtt.properties.MqttProperties",
       "sourceMethod": "getWill()",
       "description": "遗愿相关配置."
     }
@@ -20,6 +20,12 @@
       "type": "java.lang.Boolean",
       "defaultValue": false,
       "description": "是否禁用."
+    },
+    {
+      "name": "mqtt.clients",
+      "type": "java.util.Map<java.lang.String, com.github.tocrhz.mqtt.properties.ConnectionProperties>",
+      "sourceType": "com.github.tocrhz.mqtt.properties.MqttProperties",
+      "description": "多客户端配置,key:客户端ID."
     },
     {
       "name": "mqtt.uri",
@@ -43,39 +49,39 @@
       "description": "密码."
     },
     {
+      "name": "mqtt.automatic-reconnect",
+      "type": "java.lang.Boolean",
+      "description": "断开是否重新连接.",
+      "defaultValue": true
+    },
+    {
       "name": "mqtt.max-reconnect-delay",
       "type": "java.lang.Integer",
-      "description": "最大重连等待时间.",
-      "defaultValue": 30
+      "description": "最大重连等待时间(秒).",
+      "defaultValue": 60
     },
     {
       "name": "mqtt.keep-alive-interval",
       "type": "java.lang.Integer",
-      "description": "KeepAlive 周期.",
-      "defaultValue": 30
+      "description": "KeepAlive 周期(秒).",
+      "defaultValue": 60
     },
     {
       "name": "mqtt.connection-timeout",
       "type": "java.lang.Integer",
-      "description": "连接超时时间.",
+      "description": "连接超时时间(秒).",
       "defaultValue": 30
     },
     {
       "name": "mqtt.executor-service-timeout",
       "type": "java.lang.Integer",
-      "description": "发送超时时间.",
+      "description": "发送超时时间(秒).",
       "defaultValue": 10
     },
     {
       "name": "mqtt.clean-session",
       "type": "java.lang.Boolean",
       "description": "是否清除会话.",
-      "defaultValue": true
-    },
-    {
-      "name": "mqtt.automatic-reconnect",
-      "type": "java.lang.Boolean",
-      "description": "断开是否重新连接.",
       "defaultValue": true
     },
     {
@@ -86,8 +92,7 @@
     {
       "name": "mqtt.will.payload",
       "type": "java.lang.String",
-      "description": "遗愿消息内容.",
-      "defaultValue": "default will msg."
+      "description": "遗愿消息内容."
     },
     {
       "name": "mqtt.will.qos",
