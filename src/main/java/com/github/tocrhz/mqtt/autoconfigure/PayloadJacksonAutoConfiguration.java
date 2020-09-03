@@ -94,8 +94,8 @@ public class PayloadJacksonAutoConfiguration extends PayloadAutoConfiguration {
     }
 
     public static class MqttDefaultJacksonModule extends SimpleModule {
-        public static final Version VERSION = VersionUtil.parseVersion("0.2.3",
-                "tocrhz",
+        public static final Version VERSION = VersionUtil.parseVersion("1.1.0",
+                "com.github.tocrhz",
                 "spring-boot-starter-mqtt");
 
         private final static ZoneId ZONE_ID = ZoneId.of("GMT+8");

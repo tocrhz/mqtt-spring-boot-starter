@@ -6,54 +6,81 @@ import com.github.tocrhz.mqtt.subscriber.TopicPair;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.*;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
  * Establish a connection and subscribe to topics.
- *
- *
+ * <p>
  * 排序为{@link org.springframework.core.Ordered#LOWEST_PRECEDENCE} 保证最后初始化
  *
  * @author tocrhz
  */
 @Slf4j
 public class MqttConnector implements DisposableBean {
-    public final static Map<String, MqttAsyncClient> MQTT_CLIENT_MAP = new HashMap<>();
-    public final static Map<String, MqttConnectOptions> MQTT_OPTIONS_MAP = new HashMap<>();
+    public final static Map<String, IMqttAsyncClient> MQTT_CLIENT_MAP = new HashMap<>();
+    public static String DefaultClientId;
 
-    private final MqttAsyncClient client;
-    private final MqttProperties properties;
-    private final MqttConnectOptionsAdapter adapter;
-
-    public MqttConnector(MqttAsyncClient client, MqttProperties properties, MqttConnectOptionsAdapter adapter) {
-        this.client = client;
-        this.properties = properties;
-        this.adapter = adapter;
+    public static IMqttAsyncClient getDefaultClient() {
+        if (StringUtils.hasLength(DefaultClientId)) {
+            return MQTT_CLIENT_MAP.get(DefaultClientId);
+        } else if (!MQTT_CLIENT_MAP.isEmpty()) {
+            return MQTT_CLIENT_MAP.values().iterator().next();
+        }
+        return null;
     }
 
-    public void start() {
-        if (properties.getDisable() == null || !properties.getDisable()) {
-            // sort by order.
-            MqttSubscribeProcessor.SUBSCRIBERS.sort(Comparator.comparingInt(MqttSubscriber::getOrder));
-            // connect to mqtt server.
-            connect();
+    public static IMqttAsyncClient getClientById(String clientId) {
+        if (StringUtils.hasLength(clientId)) {
+            return MQTT_CLIENT_MAP.get(clientId);
+        } else {
+            return getDefaultClient();
         }
     }
 
-    private void connect() {
+    // for reconnect
+    private final ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(2);
+
+    public void start(MqttAsyncClientAdapter clientAdapter, MqttProperties properties, MqttConnectOptionsAdapter adapter) {
+        if (properties.getDisable() == null || !properties.getDisable()) {
+            // sort subscribe by order.
+            MqttSubscribeProcessor.SUBSCRIBERS.sort(Comparator.comparingInt(MqttSubscriber::getOrder));
+            // create clients
+            properties.forEach((id, options) -> {
+                try {
+                    adapter.configure(id, options);
+                    IMqttAsyncClient client = clientAdapter.create(id, options.getServerURIs());
+                    if (client != null) {
+                        if (!StringUtils.hasLength(DefaultClientId)) {
+                            DefaultClientId = id;
+                        }
+                        // put to map
+                        MQTT_CLIENT_MAP.put(id, client);
+                        // connect to mqtt server.
+                        scheduled.schedule(new ReConnect(client, options), 1, TimeUnit.MILLISECONDS);
+                    }
+                } catch (MqttException exception) {
+                    exception.printStackTrace();
+                }
+            });
+        }
+    }
+
+    private void connect(IMqttAsyncClient client, MqttConnectOptions options) {
         try {
-            MqttConnectOptions options = properties.toOptions();
-            adapter.configure(client.getClientId(), options);
             client.connect(options, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     try {
-                        log.info("connect mqtt success. brokers is [{}] client_id is [{}]."
-                                , String.join(",", properties.getUri())
-                                , properties.getClientId());
-                        subscribe();
+                        log.info("Connect mqtt broker success. brokers is [{}] client_id is [{}]."
+                                , String.join(",", options.getServerURIs())
+                                , client.getClientId());
+                        subscribe(client);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -62,9 +89,10 @@ public class MqttConnector implements DisposableBean {
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
                     try {
-                        log.error("connect mqtt failure. brokers is [{}] client_id is [{}]."
-                                , String.join(",", properties.getUri())
-                                , properties.getClientId());
+                        log.error("Connect mqtt broker failure. brokers is [{}] client_id is [{}]. retry after {} ms."
+                                , String.join(",", options.getServerURIs())
+                                , client.getClientId(), options.getMaxReconnectDelay());
+                        scheduled.schedule(new ReConnect(client, options), options.getMaxReconnectDelay(), TimeUnit.MILLISECONDS);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -74,14 +102,14 @@ public class MqttConnector implements DisposableBean {
                 @Override
                 public void connectComplete(boolean reconnect, String serverURI) {
                     if (reconnect) {
-                        log.info("mqtt reconnection success.");
-                        subscribe();
+                        log.info("Mqtt reconnection success.");
+                        subscribe(client);
                     }
                 }
 
                 @Override
                 public void connectionLost(Throwable cause) {
-                    log.warn("mqtt connection lost.");
+                    log.warn("Mqtt connection lost.");
                 }
 
                 @Override
@@ -90,7 +118,7 @@ public class MqttConnector implements DisposableBean {
                         try {
                             subscriber.accept(topic, message);
                         } catch (Exception e) {
-                            log.error("mqtt subscriber error.", e);
+                            log.error("Mqtt subscriber process error.", e);
                         }
                     }
                 }
@@ -104,11 +132,12 @@ public class MqttConnector implements DisposableBean {
         }
     }
 
-    private void subscribe() {
+    private void subscribe(IMqttAsyncClient client) {
+        String clientId = client.getClientId();
         try {
-            Set<TopicPair> topicPairs = mergeTopics();
+            Set<TopicPair> topicPairs = mergeTopics(clientId);
             if (topicPairs.isEmpty()) {
-                log.warn("there is no topic has been find.");
+                log.warn("There is no topic has been find for client '{}'.", clientId);
                 return;
             }
             StringJoiner sj = new StringJoiner(",");
@@ -122,16 +151,24 @@ public class MqttConnector implements DisposableBean {
                 ++i;
             }
             client.subscribe(topics, QOSs);
-            log.info("subscribe success. topics : " + sj.toString());
+            log.info("Mqtt client '{}' subscribe success. topics : " + sj.toString(), clientId);
         } catch (MqttException e) {
-            log.error("subscribe failure.", e);
+            log.error("Mqtt client '{}' subscribe failure.", clientId, e);
         }
     }
 
-    private Set<TopicPair> mergeTopics() {
+    /**
+     * merge the same topic
+     *
+     * @param clientId clientId
+     * @return TopicPairs
+     */
+    private Set<TopicPair> mergeTopics(String clientId) {
         Set<TopicPair> topicPairs = new HashSet<>();
         for (MqttSubscriber subscriber : MqttSubscribeProcessor.SUBSCRIBERS) {
-            topicPairs.addAll(subscriber.getTopics());
+            if (subscriber.contains(clientId)) {
+                topicPairs.addAll(subscriber.getTopics());
+            }
         }
         if (topicPairs.isEmpty()) {
             return topicPairs;
@@ -167,18 +204,37 @@ public class MqttConnector implements DisposableBean {
 
     @Override
     public void destroy() {
-        log.info("Shutting down mqtt.");
-        try {
-            if (client.isConnected()) {
-                client.disconnect();
+        log.info("Shutting down mqtt clients.");
+        MQTT_CLIENT_MAP.forEach((id, client) -> {
+            try {
+                if (client.isConnected()) {
+                    client.disconnect();
+                }
+            } catch (Exception e) {
+                log.error("Mqtt disconnect error: {}", e.getMessage(), e);
             }
-        } catch (Exception e) {
-            log.error("mqtt disconnect error: {}", e.getMessage(), e);
+            try {
+                client.close();
+            } catch (Exception e) {
+                log.error("Mqtt close error: {}", e.getMessage(), e);
+            }
+        });
+        MQTT_CLIENT_MAP.clear();
+    }
+
+    private class ReConnect implements Runnable {
+
+        final IMqttAsyncClient client;
+        final MqttConnectOptions options;
+
+        ReConnect(IMqttAsyncClient client, MqttConnectOptions options) {
+            this.client = client;
+            this.options = options;
         }
-        try {
-            client.close();
-        } catch (Exception e) {
-            log.error("mqtt close error: {}", e.getMessage(), e);
+
+        @Override
+        public void run() {
+            connect(client, options);
         }
     }
 }

@@ -33,28 +33,28 @@ public class ConnectionProperties {
     private String password;
 
     /**
-     * 最大重连等待时间.
+     * 最大重连等待时间(秒).
      *
      * @see MqttConnectOptions#setMaxReconnectDelay(int)
      */
     private Integer maxReconnectDelay;
 
     /**
-     * KeepAlive 周期.
+     * KeepAlive 周期(秒).
      *
      * @see MqttConnectOptions#setKeepAliveInterval(int)
      */
     private Integer keepAliveInterval;
 
     /**
-     * 连接超时时间.
+     * 连接超时时间(秒).
      *
      * @see MqttConnectOptions#setConnectionTimeout(int)
      */
     private Integer connectionTimeout;
 
     /**
-     * 发送超时时间.
+     * 发送超时时间(秒).
      *
      * @see MqttConnectOptions#setExecutorServiceTimeout(int)
      */

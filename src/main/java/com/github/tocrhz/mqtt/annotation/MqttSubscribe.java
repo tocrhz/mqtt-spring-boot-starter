@@ -30,9 +30,9 @@ public @interface MqttSubscribe {
     int[] qos() default 1;
 
     /**
-     * clientId
+     * clientIds
      *
      * @return clientId, default all client
      */
-    String client() default "";
+    String[] clients() default {};
 }

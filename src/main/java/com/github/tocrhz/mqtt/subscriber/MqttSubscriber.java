@@ -30,6 +30,7 @@ public class MqttSubscriber {
         }
     }
 
+    private String[] clientIds;
     private Object bean;
     private Method method;
     private LinkedList<ParameterModel> parameters;
@@ -53,6 +54,7 @@ public class MqttSubscriber {
             subscriber.order = order.value();
         }
         MqttSubscribe subscribe = method.getAnnotation(MqttSubscribe.class);
+        subscriber.clientIds = subscribe.clients();
         subscriber.setTopics(subscribe, paramTypeMap);
         return subscriber;
     }
@@ -130,6 +132,18 @@ public class MqttSubscriber {
 
     public LinkedList<TopicPair> getTopics() {
         return topics;
+    }
+
+    public boolean contains(String clientId) {
+        if (this.clientIds == null || this.clientIds.length == 0) {
+            return true; // for all client
+        }
+        for (String id : clientIds) {
+            if (id.equals(clientId)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
