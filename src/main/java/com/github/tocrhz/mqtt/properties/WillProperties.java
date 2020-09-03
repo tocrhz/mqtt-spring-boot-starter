@@ -1,13 +1,8 @@
 package com.github.tocrhz.mqtt.properties;
 
-import lombok.Getter;
-import lombok.Setter;
-
 /**
  * 遗愿相关配置.
  */
-@Getter
-@Setter
 public class WillProperties {
     /**
      * 遗愿主题.
@@ -25,4 +20,48 @@ public class WillProperties {
      * 遗愿消息是否保留.
      */
     private Boolean retained;
+
+    /**
+     * 遗愿主题.
+     */
+    public String getTopic() {
+        return topic;
+    }
+
+    /**
+     * 遗愿消息内容.
+     */
+    public Boolean getRetained() {
+        return retained;
+    }
+
+    /**
+     * 遗愿消息QOS.
+     */
+    public Integer getQos() {
+        return qos;
+    }
+
+    /**
+     * 遗愿消息是否保留.
+     */
+    public String getPayload() {
+        return payload;
+    }
+
+    public void setPayload(String payload) {
+        this.payload = payload;
+    }
+
+    public void setQos(Integer qos) {
+        this.qos = qos;
+    }
+
+    public void setRetained(Boolean retained) {
+        this.retained = retained;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
 }

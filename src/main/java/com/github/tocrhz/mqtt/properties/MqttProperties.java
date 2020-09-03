@@ -1,7 +1,5 @@
 package com.github.tocrhz.mqtt.properties;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.lang.NonNull;
@@ -18,8 +16,6 @@ import java.util.function.BiConsumer;
  * @author tocrhz
  * @see MqttConnectOptions
  */
-@Setter
-@Getter
 @ConfigurationProperties(prefix = "mqtt")
 public class MqttProperties extends ConnectionProperties {
     /**
@@ -36,6 +32,39 @@ public class MqttProperties extends ConnectionProperties {
      * 多个客户端配置, key:clientId, value:配置
      */
     private Map<String, ConnectionProperties> clients = new LinkedHashMap<>();
+
+    /**
+     * 是否禁用
+     */
+    public Boolean getDisable() {
+        return disable;
+    }
+
+    public void setDisable(Boolean disable) {
+        this.disable = disable;
+    }
+
+    /**
+     * 客户端ID
+     */
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    /**
+     * 多个客户端配置, key:clientId, value:配置
+     */
+    public Map<String, ConnectionProperties> getClients() {
+        return clients;
+    }
+
+    public void setClients(Map<String, ConnectionProperties> clients) {
+        this.clients = clients;
+    }
 
     /**
      * 遍历所有的客户端配置

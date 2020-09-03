@@ -3,8 +3,9 @@ package com.github.tocrhz.mqtt.autoconfigure;
 import com.github.tocrhz.mqtt.properties.MqttProperties;
 import com.github.tocrhz.mqtt.subscriber.MqttSubscriber;
 import com.github.tocrhz.mqtt.subscriber.TopicPair;
-import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.util.StringUtils;
 
@@ -21,8 +22,8 @@ import java.util.stream.Collectors;
  *
  * @author tocrhz
  */
-@Slf4j
 public class MqttConnector implements DisposableBean {
+    private final static Logger log = LoggerFactory.getLogger(MqttConnector.class);
     public final static Map<String, IMqttAsyncClient> MQTT_CLIENT_MAP = new HashMap<>();
     public static String DefaultClientId;
 

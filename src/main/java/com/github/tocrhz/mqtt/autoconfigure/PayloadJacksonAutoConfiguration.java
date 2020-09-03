@@ -9,7 +9,8 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.tocrhz.mqtt.convert.PayloadDeserialize;
 import com.github.tocrhz.mqtt.convert.PayloadSerialize;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -34,12 +35,12 @@ import java.util.Date;
  *
  * @author tocrhz
  */
-@Slf4j
 @Order(1001)
 @AutoConfigureAfter({JacksonAutoConfiguration.class})
 @ConditionalOnClass(ObjectMapper.class)
 @Configuration
 public class PayloadJacksonAutoConfiguration {
+    private final static Logger log = LoggerFactory.getLogger(PayloadJacksonAutoConfiguration.class);
 
     @Bean
     @Order(1001)

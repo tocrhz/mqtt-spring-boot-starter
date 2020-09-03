@@ -1,14 +1,10 @@
 package com.github.tocrhz.mqtt.properties;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
 /**
  * MQTT连接配置
  */
-@Setter
-@Getter
 public class ConnectionProperties {
 
     /**
@@ -77,6 +73,133 @@ public class ConnectionProperties {
     /**
      * 遗愿相关配置.
      */
-    @Getter
     private WillProperties will;
+
+    /**
+     * 最大重连等待时间(秒).
+     *
+     * @see MqttConnectOptions#setMaxReconnectDelay(int)
+     */
+    public Integer getMaxReconnectDelay() {
+        return maxReconnectDelay;
+    }
+
+    /**
+     * KeepAlive 周期(秒).
+     *
+     * @see MqttConnectOptions#setKeepAliveInterval(int)
+     */
+    public Integer getKeepAliveInterval() {
+        return keepAliveInterval;
+    }
+
+    /**
+     * 发送超时时间(秒).
+     *
+     * @see MqttConnectOptions#setExecutorServiceTimeout(int)
+     */
+    public Integer getExecutorServiceTimeout() {
+        return executorServiceTimeout;
+    }
+
+    /**
+     * 连接超时时间(秒).
+     *
+     * @see MqttConnectOptions#setConnectionTimeout(int)
+     */
+    public Integer getConnectionTimeout() {
+        return connectionTimeout;
+    }
+
+    /**
+     * 是否清除会话.
+     *
+     * @see MqttConnectOptions#setCleanSession(boolean)
+     */
+    public Boolean getCleanSession() {
+        return cleanSession;
+    }
+
+    /**
+     * 断开是否重新连接.
+     *
+     * @see MqttConnectOptions#setAutomaticReconnect(boolean)
+     */
+    public Boolean getAutomaticReconnect() {
+        return automaticReconnect;
+    }
+
+    /**
+     * 用户名.
+     *
+     * @see MqttConnectOptions#setUserName(String)
+     */
+    public String getUsername() {
+        return username;
+    }
+
+    /**
+     * 遗愿相关配置.
+     */
+    public WillProperties getWill() {
+        return will;
+    }
+
+    /**
+     * 密码.
+     *
+     * @see MqttConnectOptions#setPassword(char[])
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * MQTT服务器地址, 必填, 可以配置多个.
+     *
+     * @see MqttConnectOptions#setServerURIs(String[])
+     */
+    public String[] getUri() {
+        return uri;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setWill(WillProperties will) {
+        this.will = will;
+    }
+
+    public void setAutomaticReconnect(Boolean automaticReconnect) {
+        this.automaticReconnect = automaticReconnect;
+    }
+
+    public void setCleanSession(Boolean cleanSession) {
+        this.cleanSession = cleanSession;
+    }
+
+    public void setConnectionTimeout(Integer connectionTimeout) {
+        this.connectionTimeout = connectionTimeout;
+    }
+
+    public void setExecutorServiceTimeout(Integer executorServiceTimeout) {
+        this.executorServiceTimeout = executorServiceTimeout;
+    }
+
+    public void setKeepAliveInterval(Integer keepAliveInterval) {
+        this.keepAliveInterval = keepAliveInterval;
+    }
+
+    public void setMaxReconnectDelay(Integer maxReconnectDelay) {
+        this.maxReconnectDelay = maxReconnectDelay;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setUri(String[] uri) {
+        this.uri = uri;
+    }
 }
