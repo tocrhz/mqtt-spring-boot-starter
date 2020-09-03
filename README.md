@@ -13,7 +13,7 @@ MQTT starter for Spring Boot, easier to use.
 <dependency>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>1.0.0.RELEASE</version>
+    <version>1.0.1.RELEASE</version>
 </dependency>
 ```
 
