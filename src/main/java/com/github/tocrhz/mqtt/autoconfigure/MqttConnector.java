@@ -35,6 +35,15 @@ public class MqttConnector implements DisposableBean {
         return null;
     }
 
+    /**
+     * Get from {@link MqttConnector#MQTT_CLIENT_MAP} by client id.
+     * <p>
+     * Call {@link MqttConnector#getDefaultClient()} if client id is if {@code null}.
+     *
+     * @param clientId id
+     * @return IMqttAsyncClient
+     * @see MqttConnector#getDefaultClient()
+     */
     public static IMqttAsyncClient getClientById(String clientId) {
         if (StringUtils.hasLength(clientId)) {
             return MQTT_CLIENT_MAP.get(clientId);

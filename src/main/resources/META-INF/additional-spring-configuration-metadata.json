@@ -36,7 +36,7 @@
     {
       "name": "mqtt.client-id",
       "type": "java.lang.String",
-      "description": "客户端ID, 默认为MqttAsyncClient.generateClientId()."
+      "description": "客户端ID."
     },
     {
       "name": "mqtt.username",
@@ -83,6 +83,12 @@
       "type": "java.lang.Boolean",
       "description": "是否清除会话.",
       "defaultValue": true
+    },
+    {
+      "name": "mqtt.will",
+      "type": "com.github.tocrhz.mqtt.properties.WillProperties",
+      "sourceType": "com.github.tocrhz.mqtt.properties.MqttProperties",
+      "description": "遗愿相关配置."
     },
     {
       "name": "mqtt.will.topic",

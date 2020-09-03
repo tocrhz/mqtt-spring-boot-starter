@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.tocrhz.mqtt.convert.PayloadDeserialize;
 import com.github.tocrhz.mqtt.convert.PayloadSerialize;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -17,7 +18,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
@@ -34,12 +34,12 @@ import java.util.Date;
  *
  * @author tocrhz
  */
+@Slf4j
 @Order(1001)
 @AutoConfigureAfter({JacksonAutoConfiguration.class})
 @ConditionalOnClass(ObjectMapper.class)
-@ConditionalOnMissingBean(PayloadAutoConfiguration.class)
 @Configuration
-public class PayloadJacksonAutoConfiguration extends PayloadAutoConfiguration {
+public class PayloadJacksonAutoConfiguration {
 
     @Bean
     @Order(1001)
@@ -60,7 +60,7 @@ public class PayloadJacksonAutoConfiguration extends PayloadAutoConfiguration {
             try {
                 return objectMapper.writeValueAsBytes(source);
             } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-                PayloadSerialize.log.warn("Payload serialize error: {}", e.getMessage(), e);
+                log.warn("Payload serialize error: {}", e.getMessage(), e);
             }
             return null;
         };
@@ -87,10 +87,6 @@ public class PayloadJacksonAutoConfiguration extends PayloadAutoConfiguration {
                 };
             }
         };
-    }
-
-    @Override
-    public void registry(ConverterRegistry registry) {
     }
 
     public static class MqttDefaultJacksonModule extends SimpleModule {

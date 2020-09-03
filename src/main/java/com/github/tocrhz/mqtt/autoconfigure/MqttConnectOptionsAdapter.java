@@ -7,12 +7,13 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
  *
  * @author tocrhz
  */
-public abstract class MqttConnectOptionsAdapter {
+@FunctionalInterface
+public interface MqttConnectOptionsAdapter {
     /**
      * Alter MqttConnectOptions
      *
      * @param clientId 客户端ID
      * @param options  MqttConnectOptions
      */
-    protected abstract void configure(String clientId, MqttConnectOptions options);
+    void configure(String clientId, MqttConnectOptions options);
 }

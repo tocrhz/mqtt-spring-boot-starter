@@ -8,7 +8,8 @@ import org.eclipse.paho.client.mqttv3.MqttException;
  *
  * @author tocrhz
  */
-public abstract class MqttAsyncClientAdapter {
+@FunctionalInterface
+public interface MqttAsyncClientAdapter {
     /**
      * Create mqtt async client
      *
@@ -16,5 +17,5 @@ public abstract class MqttAsyncClientAdapter {
      * @param serverURIs serverURIs, String[]
      * @return IMqttAsyncClient
      */
-    protected abstract IMqttAsyncClient create(String clientId, String[] serverURIs) throws MqttException;
+    IMqttAsyncClient create(String clientId, String[] serverURIs) throws MqttException;
 }

@@ -2,10 +2,7 @@ package com.github.tocrhz.mqtt.autoconfigure;
 
 import com.github.tocrhz.mqtt.properties.MqttProperties;
 import com.github.tocrhz.mqtt.publisher.MqttPublisher;
-import org.eclipse.paho.client.mqttv3.IMqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -23,7 +20,7 @@ import org.springframework.core.annotation.Order;
  * @author tocrhz
  */
 @Order(1010)
-@AutoConfigureAfter(PayloadAutoConfiguration.class)
+@AutoConfigureAfter(PayloadJacksonAutoConfiguration.class)
 @ConditionalOnClass(MqttAsyncClient.class)
 @ConditionalOnProperty(prefix = "mqtt", name = "disable", havingValue = "false", matchIfMissing = true)
 @EnableConfigurationProperties(MqttProperties.class)
@@ -42,10 +39,7 @@ public class MqttAutoConfiguration {
     @Order(1010)
     @ConditionalOnMissingBean(MqttConnectOptionsAdapter.class)
     public MqttConnectOptionsAdapter mqttConnectOptionsAdapter() {
-        return new MqttConnectOptionsAdapter() {
-            @Override
-            protected void configure(String clientId, MqttConnectOptions options) {
-            }
+        return (clientId, options) -> {
         };
     }
 
@@ -57,12 +51,7 @@ public class MqttAutoConfiguration {
     @Order(1010)
     @ConditionalOnMissingBean(MqttAsyncClientAdapter.class)
     public MqttAsyncClientAdapter mqttAsyncClientAdapter() {
-        return new MqttAsyncClientAdapter() {
-            @Override
-            protected IMqttAsyncClient create(String clientId, String[] serverURI) throws MqttException {
-                return new MqttAsyncClient(serverURI[0], clientId, new MemoryPersistence());
-            }
-        };
+        return (clientId, serverURI) -> new MqttAsyncClient(serverURI[0], clientId, new MemoryPersistence());
     }
 
     /**

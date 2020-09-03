@@ -13,19 +13,31 @@ MQTT starter for Spring Boot, easier to use.
 <dependency>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>1.0.1.RELEASE</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
 ## 2. properties
 
 Most of the configuration has default values, they all start with 'mqtt.'.
+Support multiple client.
 
 e.g.
 
 ```properties
+
 mqtt.uri=tcp://127.0.0.1:1883
-mqtt.client-id=test_client
+mqtt.client-id=default_client
+mqtt.username=username
+mqtt.password=password
+
+mqtt.clients.multi_client_1.uri=tcp://127.0.0.1:1883
+mqtt.clients.multi_client_1.username=username
+mqtt.clients.multi_client_1.password=password
+mqtt.clients.multi_client_2.uri=tcp://127.0.0.1:1883
+mqtt.clients.multi_client_2.username=username
+mqtt.clients.multi_client_2.password=password
+
 ```
 
 ## 3. usage
@@ -44,6 +56,17 @@ public class MqttMessageHandler {
      * topic = test/+
      */
     @MqttSubscribe("test/+")
+    public void sub(String topic, MqttMessage message, @Payload String payload) {
+        logger.info("receive from    : {}", topic);
+        logger.info("message payload : {}", new String(message.getPayload(), StandardCharsets.UTF_8));
+        logger.info("string payload  : {}", payload);
+    }
+
+    /**
+     * clientId = multi_client_1
+     * topic = test/+
+     */
+    @MqttSubscribe(value = "test/+", clients = "multi_client_1")
     public void sub(String topic, MqttMessage message, @Payload String payload) {
         logger.info("receive from    : {}", topic);
         logger.info("message payload : {}", new String(message.getPayload(), StandardCharsets.UTF_8));
@@ -84,79 +107,87 @@ public class DemoService {
         publisher.send("test/send", "test message, default QOS is 1.");
         publisher.send("test/send", "Specify QOS as 0.", 0);
         publisher.send("test/send", "Specify QOS as 2.", 2, false);
+        publisher.send("multi_client_1", "test/send", "test message, default QOS is 1.");
     }
 }
 ```
 
-## 4. extension point
+## 4. extension point.
 
 #### payload serialize or deserialize
 
-Extend `PayloadAutoConfiguration` and implement methods.
-Or implement the `PayloadSerialize` and `PayloadDeserialize` interfaces respectively.
+Implements `PayloadSerialize` and `PayloadDeserialize`,
+or implements `ConverterFactory<byte[], Object>` and `Converter<Object, byte[]>` is the same.
 
 e.g.
 
 ```java
+
+@Slf4j
 @Configuration
-public class MqttPayloadConfig extends PayloadAutoConfiguration {
+public class MqttPayloadConfig {
 
-    // jackson ObjectMapper.
-    private final ObjectMapper objectMapper;
-
-    public MqttPayloadConfig(ObjectMapper objectMapper){
-        this.objectMapper = objectMapper;
+    @Bean
+    public PayloadSerialize payloadSerialize(ObjectMapper objectMapper) {
+        return source -> {
+            try {
+                return objectMapper.writeValueAsBytes(source);
+            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                log.warn("Payload serialize error: {}", e.getMessage(), e);
+            }
+            return null;
+        };
     }
 
-    @Override
-    protected void registry(ConverterRegistry registry) {
-        
-        // serialize
-        registry.addConverter((PayloadSerialize) source -> objectMapper.writeValueAsBytes(source));
-        
-        // deserialize
-        registry.addConverterFactory(new PayloadDeserialize() {
+    @Bean
+    public PayloadDeserialize payloadDeserialize(ObjectMapper objectMapper) {
+        return new PayloadDeserialize() {
             @Override
+            @SuppressWarnings("unchecked")
             public <T> Converter<byte[], T> getConverter(Class<T> targetType) {
-                return source -> objectMapper.readValue(source, targetType);
+                return source -> {
+                    try {
+                        if (targetType == String.class) {
+                            return (T) new String(source, StandardCharsets.UTF_8);
+                        }
+                        return objectMapper.readValue(source, targetType);
+                    } catch (IOException e) {
+                        log.warn("Payload deserialize error: {}", e.getMessage(), e);
+                    }
+                    return null;
+                };
             }
-        });
+        };
     }
 }
 ```
 
-#### client persistence
+#### client 
 
-Any implementation class of the `MqttClientPersistence` interface, injected into the spring container.
-
-default is `MemoryPersistence`.
+Implements `MqttAsyncClientAdapter` interface.
 
 ```java
 @Configuration
-public class MqttAutoConfiguration {
-    // ... 
-    @Bean
-    @Order(1010)
-    @ConditionalOnMissingBean(MqttClientPersistence.class)
-    public MqttClientPersistence mqttClientPersistence() {
-        return new MemoryPersistence();
+public class MqttAutoConfiguration implements MqttAsyncClientAdapter{
+
+    public IMqttAsyncClient create(String clientId, String[] serverURIs) throws MqttException {
+        new MqttAsyncClient(serverURI[0], clientId, new MemoryPersistence());
     }
-    // ... 
 }
 ```
 
 
 #### ssl or other
 
-Extend `MqttConnectOptionsAdapter` and implement methods.
+Implements `MqttConnectOptionsAdapter` interface.
 
 e.g.
 
 ```java
 @Component
-public class MqttSslConfiguration extends MqttConnectOptionsAdapter { 
+public class MqttSslConfiguration implements MqttConnectOptionsAdapter { 
     
-    protected void configure(MqttConnectOptions options) {
+    public void configure(String clientId, MqttConnectOptions options) {
         // ssl
         options.setSocketFactory(SSLSocketFactory.getDefault());
     }
