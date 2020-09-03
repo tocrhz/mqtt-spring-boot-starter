@@ -8,7 +8,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -35,7 +35,7 @@ public class MqttProperties extends ConnectionProperties {
     /**
      * 多个客户端配置, key:clientId, value:配置
      */
-    private Map<String, ConnectionProperties> clients = new HashMap<>();
+    private Map<String, ConnectionProperties> clients = new LinkedHashMap<>();
 
     /**
      * 遍历所有的客户端配置

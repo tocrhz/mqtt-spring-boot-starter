@@ -67,6 +67,7 @@ public class MqttConnector implements DisposableBean {
                     if (client != null) {
                         if (!StringUtils.hasLength(DefaultClientId)) {
                             DefaultClientId = id;
+                            log.info("Default mqtt client is '{}'", DefaultClientId);
                         }
                         // put to map
                         MQTT_CLIENT_MAP.put(id, client);
@@ -86,9 +87,9 @@ public class MqttConnector implements DisposableBean {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     try {
-                        log.info("Connect mqtt broker success. brokers is [{}] client_id is [{}]."
-                                , String.join(",", options.getServerURIs())
-                                , client.getClientId());
+                        log.info("Connect success. client_id is [{}], brokers is [{}]."
+                                , client.getClientId()
+                                , String.join(",", options.getServerURIs()));
                         subscribe(client);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -98,9 +99,10 @@ public class MqttConnector implements DisposableBean {
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
                     try {
-                        log.error("Connect mqtt broker failure. brokers is [{}] client_id is [{}]. retry after {} ms."
+                        log.error("Connect failure. client_id is [{}], brokers is [{}]. retry after {} ms."
+                                , client.getClientId()
                                 , String.join(",", options.getServerURIs())
-                                , client.getClientId(), options.getMaxReconnectDelay());
+                                , options.getMaxReconnectDelay());
                         scheduled.schedule(new ReConnect(client, options), options.getMaxReconnectDelay(), TimeUnit.MILLISECONDS);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -146,7 +148,7 @@ public class MqttConnector implements DisposableBean {
         try {
             Set<TopicPair> topicPairs = mergeTopics(clientId);
             if (topicPairs.isEmpty()) {
-                log.warn("There is no topic has been find for client '{}'.", clientId);
+                log.warn("There is no topic has been found for client '{}'.", clientId);
                 return;
             }
             StringJoiner sj = new StringJoiner(",");
