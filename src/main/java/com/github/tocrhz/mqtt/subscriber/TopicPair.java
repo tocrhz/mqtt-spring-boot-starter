@@ -76,6 +76,14 @@ public class TopicPair {
     }
 
     public boolean isMatched(String topic) {
+        if (topic.startsWith("$queue/")) {
+            // 将 $queue 去掉
+            topic = topic.substring(topic.indexOf('/'));
+        } else if (topic.startsWith("$share/")) {
+            // 将 $share/group/ 去掉
+            topic = topic.substring(topic.indexOf('/'));
+            topic = topic.substring(topic.indexOf('/'));
+        }
         if (this.pattern != null) {
             return pattern.matcher(topic).matches();
         } else {

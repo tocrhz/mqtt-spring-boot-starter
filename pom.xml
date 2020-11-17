@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <name>mqtt-spring-boot-starter</name>
     <description>MQTT starter for Spring Boot, easier to use.</description>
 
