@@ -72,8 +72,8 @@ public class TopicPair {
         return Pattern.compile(buffer.toString());
     }
 
-    public String getTopic(boolean sharedSubscription) {
-        if (this.shared && sharedSubscription) {
+    public String getTopic(boolean sharedEnable) {
+        if (this.shared && sharedEnable) {
             if (StringUtils.hasText(this.group)) {
                 return "$share/" + this.group + "/" + this.topic;
             } else {

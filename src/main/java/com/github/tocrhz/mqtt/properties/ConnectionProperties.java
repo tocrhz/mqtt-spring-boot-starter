@@ -1,5 +1,6 @@
 package com.github.tocrhz.mqtt.properties;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
 /**
@@ -31,7 +32,7 @@ public class ConnectionProperties {
     /**
      * 是否启用共享订阅,仅对EMQ可用,对于不同的Broker,共享订阅可能无效.
      */
-    private boolean sharedSubscription;
+    private Boolean shareSubEnable;
 
     /**
      * 最大重连等待时间(秒).
@@ -208,11 +209,11 @@ public class ConnectionProperties {
         this.uri = uri;
     }
 
-    public boolean isSharedSubscription() {
-        return sharedSubscription;
+    public Boolean getShareSubEnable() {
+        return shareSubEnable;
     }
 
-    public void setSharedSubscription(boolean sharedSubscription) {
-        this.sharedSubscription = sharedSubscription;
+    public void setShareSubEnable(Boolean shareSubEnable) {
+        this.shareSubEnable = shareSubEnable;
     }
 }

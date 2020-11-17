@@ -19,8 +19,8 @@ import java.util.*;
 public class MqttSubscriber {
     private final static Logger log = LoggerFactory.getLogger(MqttSubscriber.class);
 
-    public void accept(String topic, MqttMessage mqttMessage) {
-        Optional<TopicPair> matched = matched(topic);
+    public void accept(String clientId, String topic, MqttMessage mqttMessage) {
+        Optional<TopicPair> matched = matched(clientId, topic);
         if (matched.isPresent()) {
             try {
                 method.invoke(bean, fillParameters(matched.get(), topic, mqttMessage));
@@ -121,10 +121,14 @@ public class MqttSubscriber {
         return groups;
     }
 
-    private Optional<TopicPair> matched(final String topic) {
-        return topics.stream()
-                .filter(pair -> pair.isMatched(topic))
-                .findFirst();
+    private Optional<TopicPair> matched(final String clientId, final String topic) {
+        if (clientIds == null || clientIds.length == 0
+                || Arrays.binarySearch(clientIds, clientId) >= 0) {
+            return topics.stream()
+                    .filter(pair -> pair.isMatched(topic))
+                    .findFirst();
+        }
+        return Optional.empty();
     }
 
     private Object[] fillParameters(TopicPair topicPair, String topic, MqttMessage mqttMessage) {

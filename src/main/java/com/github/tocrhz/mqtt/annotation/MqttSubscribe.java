@@ -49,5 +49,5 @@ public @interface MqttSubscribe {
      * '$share/&lt;group&gt;/&lt;topic&gt;' if group not blank
      * @return Shared subscription
      */
-    String[] groups() default {};
+    String[] groups() default "";
 }
