@@ -55,12 +55,13 @@ public class MqttConnector implements DisposableBean {
 
     // for reconnect
     private final ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(2);
-
+    private MqttProperties properties;
     public void start(MqttAsyncClientAdapter clientAdapter, MqttProperties properties, MqttConnectOptionsAdapter adapter) {
         if (properties.getDisable() == null || !properties.getDisable()) {
             // sort subscribe by order.
             MqttSubscribeProcessor.SUBSCRIBERS.sort(Comparator.comparingInt(MqttSubscriber::getOrder));
             // create clients
+            this.properties = properties;
             properties.forEach((id, options) -> {
                 try {
                     adapter.configure(id, options);
@@ -146,8 +147,9 @@ public class MqttConnector implements DisposableBean {
 
     private void subscribe(IMqttAsyncClient client) {
         String clientId = client.getClientId();
+        boolean sharedSubscription = this.properties.isSharedSubscription(clientId);
         try {
-            Set<TopicPair> topicPairs = mergeTopics(clientId);
+            Set<TopicPair> topicPairs = mergeTopics(clientId, sharedSubscription);
             if (topicPairs.isEmpty()) {
                 log.warn("There is no topic has been found for client '{}'.", clientId);
                 return;
@@ -157,7 +159,7 @@ public class MqttConnector implements DisposableBean {
             int[] QOSs = new int[topicPairs.size()];
             int i = 0;
             for (TopicPair topicPair : topicPairs) {
-                topics[i] = topicPair.getTopic();
+                topics[i] = topicPair.getTopic(sharedSubscription);
                 QOSs[i] = topicPair.getQos();
                 sj.add("('" + topics[i] + "', " + QOSs[i] + ")");
                 ++i;
@@ -175,7 +177,7 @@ public class MqttConnector implements DisposableBean {
      * @param clientId clientId
      * @return TopicPairs
      */
-    private Set<TopicPair> mergeTopics(String clientId) {
+    private Set<TopicPair> mergeTopics(String clientId, boolean sharedSubscription) {
         Set<TopicPair> topicPairs = new HashSet<>();
         for (MqttSubscriber subscriber : MqttSubscribeProcessor.SUBSCRIBERS) {
             if (subscriber.contains(clientId)) {
@@ -196,17 +198,17 @@ public class MqttConnector implements DisposableBean {
                 if (pair.getQos() != topic.getQos()) {
                     continue;
                 }
-                String temp = pair.getTopic()
+                String temp = pair.getTopic(sharedSubscription)
                         .replace('+', '\u0000')
                         .replace("#", "\u0000/\u0000");
-                if (MqttTopic.isMatched(topic.getTopic(), temp)) {
+                if (MqttTopic.isMatched(topic.getTopic(sharedSubscription), temp)) {
                     pairs[i] = topic;
                     continue;
                 }
-                temp = topic.getTopic()
+                temp = topic.getTopic(sharedSubscription)
                         .replace('+', '\u0000')
                         .replace("#", "\u0000/\u0000");
-                if (MqttTopic.isMatched(pair.getTopic(), temp)) {
+                if (MqttTopic.isMatched(pair.getTopic(sharedSubscription), temp)) {
                     break;
                 }
             }

@@ -35,4 +35,19 @@ public @interface MqttSubscribe {
      * @return clientId, default all client
      */
     String[] clients() default {};
+
+    /**
+     * Shared subscription, default false;
+     * @see #groups()
+     * @return false/true
+     */
+    boolean[] shared() default false;
+
+    /**
+     * Shared subscription group, default: '$queue/&lt;topic&gt;'
+     * <p>
+     * '$share/&lt;group&gt;/&lt;topic&gt;' if group not blank
+     * @return Shared subscription
+     */
+    String[] groups() default {};
 }

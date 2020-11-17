@@ -62,25 +62,63 @@ public class MqttSubscriber {
 
     private void setTopics(MqttSubscribe subscribe, HashMap<String, Class<?>> paramTypeMap) {
         String[] topics = subscribe.value();
-        int[] qos = subscribe.qos();
-        int topic_len = topics.length;
-        int qos_len = qos.length;
-        if (topic_len > qos_len) {
-            int[] temp_qos = new int[topic_len];
-            System.arraycopy(qos, 0, temp_qos, 0, qos_len);
-            Arrays.fill(temp_qos, qos_len, topic_len, qos[qos_len - 1]);
-            qos = temp_qos;
-        } else if (qos_len > topic_len) {
-            int[] temp_qos = new int[topic_len];
-            System.arraycopy(qos, 0, temp_qos, 0, topic_len);
-            qos = temp_qos;
-        }
+        int[] qos = fillQos(topics, subscribe.qos());
+        boolean[] shared = fillShared(topics, subscribe.shared());
+        String[] groups = fillGroups(topics, subscribe.groups());
         LinkedHashSet<TopicPair> temps = new LinkedHashSet<>();
         for (int i = 0; i < topics.length; i++) {
-            temps.add(TopicPair.of(topics[i], qos[i], paramTypeMap));
+            temps.add(TopicPair.of(topics[i], qos[i], shared[i], groups[i], paramTypeMap));
         }
         this.topics.addAll(temps);
         this.topics.sort(Comparator.comparingInt(TopicPair::order));
+    }
+
+    private int[] fillQos(String[] topics, int[] qos) {
+        int topic_len = topics.length;
+        int qos_len = qos.length;
+        if (topic_len > qos_len) {
+            int[] temp = new int[topic_len];
+            System.arraycopy(qos, 0, temp, 0, qos_len);
+            Arrays.fill(temp, qos_len, topic_len, qos[qos_len - 1]);
+            return temp;
+        } else if (qos_len > topic_len) {
+            int[] temp = new int[topic_len];
+            System.arraycopy(qos, 0, temp, 0, topic_len);
+            return temp;
+        }
+        return qos;
+    }
+
+    private boolean[] fillShared(String[] topics, boolean[] shared) {
+        int topic_len = topics.length;
+        int qos_len = shared.length;
+        if (topic_len > qos_len) {
+            boolean[] temp = new boolean[topic_len];
+            System.arraycopy(shared, 0, temp, 0, qos_len);
+            Arrays.fill(temp, qos_len, topic_len, shared[qos_len - 1]);
+            return temp;
+        } else if (qos_len > topic_len) {
+            boolean[] temp = new boolean[topic_len];
+            System.arraycopy(shared, 0, temp, 0, topic_len);
+            return temp;
+        }
+        return shared;
+    }
+
+    private String[] fillGroups(String[] topics, String[] groups) {
+        int topic_len = topics.length;
+        int qos_len = groups.length;
+        if (topic_len > qos_len) {
+            String[] temp = new String[topic_len];
+            System.arraycopy(groups, 0, temp, 0, qos_len);
+            Arrays.fill(temp, qos_len, topic_len, groups[qos_len - 1]);
+            return temp;
+        } else if (qos_len > topic_len) {
+            String[] temp = new String[topic_len];
+            System.arraycopy(groups, 0, temp, 0, topic_len);
+            return temp;
+        }
+        return groups;
     }
 
     private Optional<TopicPair> matched(final String topic) {

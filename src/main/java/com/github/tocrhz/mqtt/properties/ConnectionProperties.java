@@ -29,6 +29,11 @@ public class ConnectionProperties {
     private String password;
 
     /**
+     * 是否启用共享订阅,仅对EMQ可用,对于不同的Broker,共享订阅可能无效.
+     */
+    private boolean sharedSubscription;
+
+    /**
      * 最大重连等待时间(秒).
      *
      * @see MqttConnectOptions#setMaxReconnectDelay(int)
@@ -201,5 +206,13 @@ public class ConnectionProperties {
 
     public void setUri(String[] uri) {
         this.uri = uri;
+    }
+
+    public boolean isSharedSubscription() {
+        return sharedSubscription;
+    }
+
+    public void setSharedSubscription(boolean sharedSubscription) {
+        this.sharedSubscription = sharedSubscription;
     }
 }

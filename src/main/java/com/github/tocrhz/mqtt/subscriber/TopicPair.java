@@ -2,6 +2,7 @@ package com.github.tocrhz.mqtt.subscriber;
 
 import org.eclipse.paho.client.mqttv3.MqttTopic;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -25,8 +26,10 @@ public class TopicPair {
     private Pattern pattern;
     private String[] params;
     private int qos;
+    private boolean shared;
+    private String group;
 
-    public static TopicPair of(String topic, int qos, HashMap<String, Class<?>> paramTypeMap) {
+    public static TopicPair of(String topic, int qos, boolean shared, String group, HashMap<String, Class<?>> paramTypeMap) {
         Assert.isTrue(topic != null && !topic.isEmpty(), "topic cannot be blank");
         Assert.isTrue(qos >= 0, "qos min value is 0");
         Assert.isTrue(qos <= 2, "qos max value is 2");
@@ -41,6 +44,8 @@ public class TopicPair {
         }
         MqttTopic.validate(topicPair.topic, true);
         topicPair.qos = qos;
+        topicPair.shared = shared;
+        topicPair.group = group;
         return topicPair;
     }
 
@@ -67,8 +72,15 @@ public class TopicPair {
         return Pattern.compile(buffer.toString());
     }
 
-    public String getTopic() {
-        return topic;
+    public String getTopic(boolean sharedSubscription) {
+        if (this.shared && sharedSubscription) {
+            if (StringUtils.hasText(this.group)) {
+                return "$share/" + this.group + "/" + this.topic;
+            } else {
+                return "$queue/" + this.topic;
+            }
+        }
+        return this.topic;
     }
 
     public int getQos() {
@@ -76,14 +88,6 @@ public class TopicPair {
     }
 
     public boolean isMatched(String topic) {
-        if (topic.startsWith("$queue/")) {
-            // 将 $queue 去掉
-            topic = topic.substring(topic.indexOf('/'));
-        } else if (topic.startsWith("$share/")) {
-            // 将 $share/group/ 去掉
-            topic = topic.substring(topic.indexOf('/'));
-            topic = topic.substring(topic.indexOf('/'));
-        }
         if (this.pattern != null) {
             return pattern.matcher(topic).matches();
         } else {

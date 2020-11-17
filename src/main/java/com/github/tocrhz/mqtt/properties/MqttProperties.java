@@ -150,6 +150,7 @@ public class MqttProperties extends ConnectionProperties {
         target.setCleanSession(mergeValue(getCleanSession(), target.getCleanSession(), true));
         target.setAutomaticReconnect(mergeValue(getAutomaticReconnect(), target.getAutomaticReconnect(), true));
         target.setWill(mergeValue(getWill(), target.getWill(), null));
+        target.setSharedSubscription(mergeValue(isSharedSubscription(), target.isSharedSubscription(), false));
         if (target.getWill() != null && getWill() != null) {
             WillProperties will = getWill();
             WillProperties targetWill = target.getWill();
@@ -168,5 +169,18 @@ public class MqttProperties extends ConnectionProperties {
         } else {
             return targetValue;
         }
+    }
+
+    public boolean isSharedSubscription(String clientId) {
+        ConnectionProperties properties = clients.get(clientId);
+        if (properties == null) {
+            if (getClientId().equals(clientId)) {
+                properties = this;
+            } else {
+                return false;
+            }
+        }
+        properties.setSharedSubscription(mergeValue(isSharedSubscription(), properties.isSharedSubscription(), false));
+        return mergeValue(isSharedSubscription(), properties.isSharedSubscription(), false);
     }
 }
