@@ -38,16 +38,27 @@ public @interface MqttSubscribe {
 
     /**
      * Shared subscription, default false;
+     * <p>
+     * for topic one-to-one.
+     * <p>
+     * If not one-to-one. fill by last qos and ignore the superfluous.
+     *
+     * @return true or false
      * @see #groups()
-     * @return false/true
      */
     boolean[] shared() default false;
 
     /**
-     * Shared subscription group, default: '$queue/&lt;topic&gt;'
+     * Shared subscription group,
      * <p>
-     * '$share/&lt;group&gt;/&lt;topic&gt;' if group not blank
-     * @return Shared subscription
+     * if default, use '$queue/&lt;topic&gt;'
+     * <p>
+     * if group not blank, use '$share/&lt;group&gt;/&lt;topic&gt;'
+     * for topic one-to-one.
+     * <p>
+     * If not one-to-one. fill by last qos and ignore the superfluous.
+     *
+     * @return String[] groups
      */
     String[] groups() default "";
 }

@@ -1,6 +1,5 @@
 package com.github.tocrhz.mqtt.properties;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
 /**
@@ -30,9 +29,9 @@ public class ConnectionProperties {
     private String password;
 
     /**
-     * 是否启用共享订阅,仅对EMQ可用,对于不同的Broker,共享订阅可能无效.
+     * 是否启用共享订阅,对于不同的Broker,共享订阅可能无效(EMQ已测可用).
      */
-    private Boolean shareSubEnable;
+    private Boolean enableSharedSubscription;
 
     /**
      * 最大重连等待时间(秒).
@@ -84,6 +83,7 @@ public class ConnectionProperties {
     /**
      * 最大重连等待时间(秒).
      *
+     * @return Integer
      * @see MqttConnectOptions#setMaxReconnectDelay(int)
      */
     public Integer getMaxReconnectDelay() {
@@ -93,6 +93,7 @@ public class ConnectionProperties {
     /**
      * KeepAlive 周期(秒).
      *
+     * @return Integer
      * @see MqttConnectOptions#setKeepAliveInterval(int)
      */
     public Integer getKeepAliveInterval() {
@@ -102,6 +103,7 @@ public class ConnectionProperties {
     /**
      * 发送超时时间(秒).
      *
+     * @return Integer
      * @see MqttConnectOptions#setExecutorServiceTimeout(int)
      */
     public Integer getExecutorServiceTimeout() {
@@ -111,6 +113,7 @@ public class ConnectionProperties {
     /**
      * 连接超时时间(秒).
      *
+     * @return Integer
      * @see MqttConnectOptions#setConnectionTimeout(int)
      */
     public Integer getConnectionTimeout() {
@@ -120,6 +123,7 @@ public class ConnectionProperties {
     /**
      * 是否清除会话.
      *
+     * @return Boolean
      * @see MqttConnectOptions#setCleanSession(boolean)
      */
     public Boolean getCleanSession() {
@@ -129,6 +133,7 @@ public class ConnectionProperties {
     /**
      * 断开是否重新连接.
      *
+     * @return Boolean
      * @see MqttConnectOptions#setAutomaticReconnect(boolean)
      */
     public Boolean getAutomaticReconnect() {
@@ -138,6 +143,7 @@ public class ConnectionProperties {
     /**
      * 用户名.
      *
+     * @return String
      * @see MqttConnectOptions#setUserName(String)
      */
     public String getUsername() {
@@ -146,6 +152,8 @@ public class ConnectionProperties {
 
     /**
      * 遗愿相关配置.
+     *
+     * @return WillProperties
      */
     public WillProperties getWill() {
         return will;
@@ -154,6 +162,7 @@ public class ConnectionProperties {
     /**
      * 密码.
      *
+     * @return password
      * @see MqttConnectOptions#setPassword(char[])
      */
     public String getPassword() {
@@ -163,10 +172,20 @@ public class ConnectionProperties {
     /**
      * MQTT服务器地址, 必填, 可以配置多个.
      *
+     * @return String[]
      * @see MqttConnectOptions#setServerURIs(String[])
      */
     public String[] getUri() {
         return uri;
+    }
+
+    /**
+     * 是否启用共享订阅,对于不同的Broker,共享订阅可能无效(EMQ已测可用).
+     *
+     * @return Boolean
+     */
+    public Boolean getEnableSharedSubscription() {
+        return enableSharedSubscription;
     }
 
     public void setUsername(String username) {
@@ -209,11 +228,7 @@ public class ConnectionProperties {
         this.uri = uri;
     }
 
-    public Boolean getShareSubEnable() {
-        return shareSubEnable;
-    }
-
-    public void setShareSubEnable(Boolean shareSubEnable) {
-        this.shareSubEnable = shareSubEnable;
+    public void setEnableSharedSubscription(Boolean enableSharedSubscription) {
+        this.enableSharedSubscription = enableSharedSubscription;
     }
 }

@@ -2,9 +2,9 @@
 
 MQTT starter for Spring Boot, easier to use.
 
-> Support spring boot version: 1.5.x ~ 2.3.x
+> Support spring boot version: 1.5.x ~ 2.4.0
 >
-> This document is machine translated, forgive me.
+> This document is machine translated.
 
 
 ## 1. import
@@ -13,7 +13,7 @@ MQTT starter for Spring Boot, easier to use.
 <dependency>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.2</version>
 </dependency>
 ```
 
@@ -74,16 +74,28 @@ public class MqttMessageHandler {
     }
 
     /**
+     * subscribe = $queue/test/+
      * topic = test/+
      * pattern = ^test/([^/]+)$
      */
-    @MqttSubscribe("test/{id}")
+    @MqttSubscribe(value="test/{id}", shared=true)
     public void sub(String topic, @NamedValue("id") String id, @Payload UserInfo userInfo) {
         logger.info("receive from   : {}", topic);
         logger.info("named value id : {}", id);
         logger.info("object payload : {}", userInfo);
     }
 
+    /**
+     * subscribe = $share/gp/test/+
+     * topic = test/+
+     * pattern = ^test/([^/]+)$
+     */
+    @MqttSubscribe(value="test/{id}", shared=true, groups="gp")
+    public void sub(String topic, @NamedValue("id") String id, @Payload UserInfo userInfo) {
+        logger.info("receive from   : {}", topic);
+        logger.info("named value id : {}", id);
+        logger.info("object payload : {}", userInfo);
+    }
 }
 ```
 

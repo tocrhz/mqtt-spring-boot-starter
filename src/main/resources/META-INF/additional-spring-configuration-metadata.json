@@ -85,10 +85,10 @@
       "defaultValue": true
     },
     {
-      "name": "mqtt.share-sub-enable",
+      "name": "mqtt.enable-shared-subscription",
       "type": "java.lang.Boolean",
-      "description": "是否启用共享订阅,仅对EMQ可用,对于不同的Broker,共享订阅可能无效.",
-      "defaultValue": false
+      "description": "是否启用共享订阅,对于不同的Broker,共享订阅可能无效(EMQ已测可用).",
+      "defaultValue": true
     },
     {
       "name": "mqtt.will",

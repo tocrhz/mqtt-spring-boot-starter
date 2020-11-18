@@ -34,6 +34,8 @@ public class MqttAutoConfiguration {
 
     /**
      * default MqttConnectOptionsAdapter, nothing to do.
+     *
+     * @return MqttConnectOptionsAdapter
      */
     @Bean
     @Order(1010)
@@ -46,6 +48,8 @@ public class MqttAutoConfiguration {
 
     /**
      * default MqttClientAdapter
+     *
+     * @return MqttAsyncClientAdapter
      */
     @Bean
     @Order(1010)
@@ -56,6 +60,8 @@ public class MqttAutoConfiguration {
 
     /**
      * default MqttPublisher
+     *
+     * @return MqttPublisher
      */
     @Bean
     @Order(1013)
@@ -68,6 +74,8 @@ public class MqttAutoConfiguration {
      * default MqttConnector.
      * <p>
      * Ensure the final initialization, the order is {@link org.springframework.core.Ordered#LOWEST_PRECEDENCE}
+     *
+     * @return MqttConnector
      */
     @Bean
     @Order // Ordered.LOWEST_PRECEDENCE

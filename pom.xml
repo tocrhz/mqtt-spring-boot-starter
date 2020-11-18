@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
     <name>mqtt-spring-boot-starter</name>
     <description>MQTT starter for Spring Boot, easier to use.</description>
 
@@ -44,7 +44,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <sprint-boot.version>2.3.3.RELEASE</sprint-boot.version>
+        <sprint-boot.version>2.4.0</sprint-boot.version>
         <slf4j.version>1.7.30</slf4j.version>
         <paho.mqttv3.version>1.2.5</paho.mqttv3.version>
         <jackson.version>2.11.2</jackson.version>
@@ -63,7 +63,7 @@
             <version>${paho.mqttv3.version}</version>
         </dependency>
 
-        <!-- spring-boot: 1.5.x ~ 2.3.x -->
+        <!-- spring-boot: 1.5.x ~ 2.4.0 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>

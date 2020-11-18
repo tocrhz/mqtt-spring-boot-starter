@@ -16,6 +16,7 @@ public interface MqttAsyncClientAdapter {
      * @param clientId  client ID
      * @param serverURIs serverURIs, String[]
      * @return IMqttAsyncClient
+     * @throws MqttException when found mqtt exception
      */
     IMqttAsyncClient create(String clientId, String[] serverURIs) throws MqttException;
 }

@@ -23,13 +23,17 @@ public class WillProperties {
 
     /**
      * 遗愿主题.
+     *
+     * @return String
      */
     public String getTopic() {
         return topic;
     }
 
     /**
-     * 遗愿消息内容.
+     * 遗愿消息是否保留.
+     *
+     * @return Boolean
      */
     public Boolean getRetained() {
         return retained;
@@ -37,13 +41,17 @@ public class WillProperties {
 
     /**
      * 遗愿消息QOS.
+     *
+     * @return Integer
      */
     public Integer getQos() {
         return qos;
     }
 
     /**
-     * 遗愿消息是否保留.
+     * 遗愿消息内容.
+     *
+     * @return String
      */
     public String getPayload() {
         return payload;

@@ -35,6 +35,8 @@ public class MqttProperties extends ConnectionProperties {
 
     /**
      * 是否禁用
+     *
+     * @return Boolean
      */
     public Boolean getDisable() {
         return disable;
@@ -46,6 +48,8 @@ public class MqttProperties extends ConnectionProperties {
 
     /**
      * 客户端ID
+     *
+     * @return String
      */
     public String getClientId() {
         return clientId;
@@ -57,6 +61,8 @@ public class MqttProperties extends ConnectionProperties {
 
     /**
      * 多个客户端配置, key:clientId, value:配置
+     *
+     * @return Map
      */
     public Map<String, ConnectionProperties> getClients() {
         return clients;
@@ -150,7 +156,7 @@ public class MqttProperties extends ConnectionProperties {
         target.setCleanSession(mergeValue(getCleanSession(), target.getCleanSession(), true));
         target.setAutomaticReconnect(mergeValue(getAutomaticReconnect(), target.getAutomaticReconnect(), true));
         target.setWill(mergeValue(getWill(), target.getWill(), null));
-        target.setShareSubEnable(mergeValue(getShareSubEnable(), target.getShareSubEnable(), false));
+        target.setEnableSharedSubscription(mergeValue(getEnableSharedSubscription(), target.getEnableSharedSubscription(), true));
         if (target.getWill() != null && getWill() != null) {
             WillProperties will = getWill();
             WillProperties targetWill = target.getWill();
@@ -180,6 +186,6 @@ public class MqttProperties extends ConnectionProperties {
                 return false;
             }
         }
-        return properties.getShareSubEnable();
+        return properties.getEnableSharedSubscription();
     }
 }
