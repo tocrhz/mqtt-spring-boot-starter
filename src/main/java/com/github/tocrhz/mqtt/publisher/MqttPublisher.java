@@ -2,6 +2,7 @@ package com.github.tocrhz.mqtt.publisher;
 
 import com.github.tocrhz.mqtt.autoconfigure.MqttConnector;
 import com.github.tocrhz.mqtt.autoconfigure.MqttConversionService;
+import com.github.tocrhz.mqtt.pojo.enums.QosEnum;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -9,18 +10,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import java.util.Objects;
-
 /**
  * Used to publish message
  *
  * @author tocrhz
  */
 public class MqttPublisher {
+    /**
+     * 设定qos 默认值为0
+     */
+    private final static Integer DEFAULT_QOS = QosEnum.QOS_LEVEL_0.getCode();
+
     private final static Logger log = LoggerFactory.getLogger(MqttPublisher.class);
 
     /**
-     * 发送消息到指定主题 qos=1
+     * 发送消息到指定主题 qos=0
      *
      * @param topic   主题
      * @param payload 消息内容
@@ -28,11 +32,11 @@ public class MqttPublisher {
      * @throws NullPointerException     if client not exists
      */
     public void send(String topic, Object payload) {
-        send(null, topic, payload, 1, false, null);
+        send(null, topic, payload, DEFAULT_QOS, false, null);
     }
 
     /**
-     * 发送消息到指定主题 qos=1
+     * 发送消息到指定主题 qos=0
      *
      * @param topic    主题
      * @param payload  消息内容
@@ -41,11 +45,11 @@ public class MqttPublisher {
      * @throws NullPointerException     if client not exists
      */
     public void send(String topic, Object payload, IMqttActionListener callback) {
-        send(null, topic, payload, 1, false, callback);
+        send(null, topic, payload, DEFAULT_QOS, false, callback);
     }
 
     /**
-     * 发送消息到指定主题 qos=1
+     * 发送消息到指定主题 qos=0
      *
      * @param clientId 客户端ID
      * @param topic    主题
@@ -54,11 +58,11 @@ public class MqttPublisher {
      * @throws NullPointerException     if client not exists
      */
     public void send(String clientId, String topic, Object payload) {
-        send(clientId, topic, payload, 1, false, null);
+        send(clientId, topic, payload, DEFAULT_QOS, false, null);
     }
 
     /**
-     * 发送消息到指定主题 qos=1
+     * 发送消息到指定主题 qos=0
      *
      * @param clientId 客户端ID
      * @param topic    主题
@@ -68,7 +72,7 @@ public class MqttPublisher {
      * @throws NullPointerException     if client not exists
      */
     public void send(String clientId, String topic, Object payload, IMqttActionListener callback) {
-        send(clientId, topic, payload, 1, false, callback);
+        send(clientId, topic, payload, DEFAULT_QOS, false, callback);
     }
 
 
@@ -129,9 +133,11 @@ public class MqttPublisher {
      * @throws IllegalArgumentException if topic is empty
      * @throws NullPointerException     if client not exists
      */
-    public void send(String clientId, String topic, Object payload, int qos, boolean retained, IMqttActionListener callback) {
+    public void send(String clientId, String topic, Object payload, int qos, boolean retained,
+                     IMqttActionListener callback) {
         Assert.isTrue(topic != null && !topic.trim().isEmpty(), "topic cannot be blank.");
-        IMqttAsyncClient client = Objects.requireNonNull(MqttConnector.getClientById(clientId));
+        IMqttAsyncClient client = MqttConnector.getClientById(clientId);
+        Assert.isTrue(client != null, "clientId not found");
         byte[] bytes = MqttConversionService.getSharedInstance().toBytes(payload);
         if (bytes == null || bytes.length == 0) {
             return;
