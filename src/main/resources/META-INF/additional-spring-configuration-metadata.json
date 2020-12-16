@@ -49,6 +49,12 @@
       "description": "密码."
     },
     {
+      "name": "mqtt.default-publish-qos",
+      "type": "java.lang.Integer",
+      "description": "发布消息默认使用的QOS, 默认 0.",
+      "defaultValue": 0
+    },
+    {
       "name": "mqtt.automatic-reconnect",
       "type": "java.lang.Boolean",
       "description": "断开是否重新连接.",

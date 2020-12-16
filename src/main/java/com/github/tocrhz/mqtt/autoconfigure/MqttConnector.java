@@ -25,7 +25,9 @@ import java.util.stream.Collectors;
 public class MqttConnector implements DisposableBean {
     private final static Logger log = LoggerFactory.getLogger(MqttConnector.class);
     public final static Map<String, IMqttAsyncClient> MQTT_CLIENT_MAP = new HashMap<>();
+    public final static Map<String, Integer> MQTT_DEFAULT_QOS_MAP = new HashMap<>();
     public static String DefaultClientId;
+    public static int DefaultPublishQos;
 
     public static IMqttAsyncClient getDefaultClient() {
         if (StringUtils.hasLength(DefaultClientId)) {
@@ -34,6 +36,14 @@ public class MqttConnector implements DisposableBean {
             return MQTT_CLIENT_MAP.values().iterator().next();
         }
         return null;
+    }
+
+    public static int getDefaultQosById(String clientId) {
+        if (StringUtils.hasLength(clientId)) {
+            return MQTT_DEFAULT_QOS_MAP.getOrDefault(clientId, 0);
+        } else {
+            return DefaultPublishQos;
+        }
     }
 
     /**
@@ -67,12 +77,15 @@ public class MqttConnector implements DisposableBean {
                     adapter.configure(id, options);
                     IMqttAsyncClient client = clientAdapter.create(id, options.getServerURIs());
                     if (client != null) {
-                        if (!StringUtils.hasLength(DefaultClientId)) {
-                            DefaultClientId = id;
-                            log.info("Default mqtt client is '{}'", DefaultClientId);
-                        }
                         // put to map
                         MQTT_CLIENT_MAP.put(id, client);
+                        MQTT_DEFAULT_QOS_MAP.put(id, properties.getDefaultPublishQos(id));
+
+                        if (!StringUtils.hasLength(DefaultClientId)) {
+                            DefaultClientId = id;
+                            DefaultPublishQos = MQTT_DEFAULT_QOS_MAP.get(id);
+                            log.info("Default mqtt client is '{}'", DefaultClientId);
+                        }
                         // connect to mqtt server.
                         scheduled.schedule(new ReConnect(client, options), 1, TimeUnit.MILLISECONDS);
                     }

@@ -113,7 +113,7 @@ public class MqttProperties extends ConnectionProperties {
     private MqttConnectOptions toOptions(@NonNull String clientId) {
         ConnectionProperties properties = clients.get(clientId);
         if (properties == null) {
-            if (getClientId().equals(clientId)) {
+            if (clientId.equals(getClientId())) {
                 properties = this;
             } else {
                 return null;
@@ -149,6 +149,7 @@ public class MqttProperties extends ConnectionProperties {
         target.setUri(mergeValue(getUri(), target.getUri(), new String[]{"tcp://127.0.0.1:1883"}));
         target.setUsername(mergeValue(getUsername(), target.getUsername(), null));
         target.setPassword(mergeValue(getPassword(), target.getPassword(), null));
+        target.setDefaultPublishQos(mergeValue(getDefaultPublishQos(), target.getDefaultPublishQos(), 0));
         target.setMaxReconnectDelay(mergeValue(getMaxReconnectDelay(), target.getMaxReconnectDelay(), 60));
         target.setKeepAliveInterval(mergeValue(getKeepAliveInterval(), target.getKeepAliveInterval(), 60));
         target.setConnectionTimeout(mergeValue(getConnectionTimeout(), target.getConnectionTimeout(), 30));
@@ -178,14 +179,26 @@ public class MqttProperties extends ConnectionProperties {
     }
 
     public boolean isSharedEnable(String clientId) {
-        ConnectionProperties properties = clients.get(clientId);
-        if (properties == null) {
-            if (getClientId().equals(clientId)) {
-                properties = this;
-            } else {
+        if (clientId.equals(getClientId())) {
+            return getEnableSharedSubscription();
+        } else {
+            ConnectionProperties properties = clients.get(clientId);
+            if (properties == null) {
                 return false;
             }
+            return properties.getEnableSharedSubscription();
         }
-        return properties.getEnableSharedSubscription();
+    }
+
+    public int getDefaultPublishQos(String clientId) {
+        if (clientId.equals(getClientId())) {
+            return getDefaultPublishQos();
+        } else {
+            ConnectionProperties properties = clients.get(clientId);
+            if (properties == null) {
+                return 0;
+            }
+            return properties.getDefaultPublishQos();
+        }
     }
 }

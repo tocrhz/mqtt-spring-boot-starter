@@ -27,7 +27,7 @@ public @interface MqttSubscribe {
      *
      * @return QOSs
      */
-    int[] qos() default 1;
+    int[] qos() default 0;
 
     /**
      * clientIds
