@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>1.1.2</version>
+    <version>1.2.0</version>
     <name>mqtt-spring-boot-starter</name>
     <description>MQTT starter for Spring Boot, easier to use.</description>
 
@@ -33,9 +33,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:https://github.com/tocrhz/mqtt-spring-boot-starter.git</connection>
-        <developerConnection>scm:git:https://github.com/tocrhz/mqtt-spring-boot-starter</developerConnection>
-        <url>git:https://github.com/tocrhz/mqtt-spring-boot-starter.git</url>
+        <connection>scm:https://github.com/tocrhz/mqtt-spring-boot-starter</connection>
+        <developerConnection>scm:https://github.com/tocrhz/mqtt-spring-boot-starter</developerConnection>
+        <url>https://github.com/tocrhz/mqtt-spring-boot-starter</url>
     </scm>
 
     <properties>

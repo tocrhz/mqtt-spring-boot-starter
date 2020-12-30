@@ -32,7 +32,7 @@ public class MqttPublisher {
      * @throws NullPointerException     if client not exists
      */
     public void send(String topic, Object payload) {
-        send(null, topic, payload, DEFAULT_QOS, false, null);
+        send(MqttConnector.DefaultClientId, topic, payload, MqttConnector.DefaultPublishQos, false, null);
     }
 
     /**
@@ -45,7 +45,7 @@ public class MqttPublisher {
      * @throws NullPointerException     if client not exists
      */
     public void send(String topic, Object payload, IMqttActionListener callback) {
-        send(null, topic, payload, DEFAULT_QOS, false, callback);
+        send(MqttConnector.DefaultClientId, topic, payload, DEFAULT_QOS, false, callback);
     }
 
     /**
@@ -58,7 +58,7 @@ public class MqttPublisher {
      * @throws NullPointerException     if client not exists
      */
     public void send(String clientId, String topic, Object payload) {
-        send(clientId, topic, payload, DEFAULT_QOS, false, null);
+        send(clientId, topic, payload, MqttConnector.getDefaultQosById(clientId), false, null);
     }
 
     /**
@@ -72,7 +72,7 @@ public class MqttPublisher {
      * @throws NullPointerException     if client not exists
      */
     public void send(String clientId, String topic, Object payload, IMqttActionListener callback) {
-        send(clientId, topic, payload, DEFAULT_QOS, false, callback);
+        send(clientId, topic, payload, MqttConnector.getDefaultQosById(clientId), false, callback);
     }
 
 
@@ -87,7 +87,7 @@ public class MqttPublisher {
      * @throws NullPointerException     if client not exists
      */
     public void send(String topic, Object payload, int qos, boolean retained) {
-        send(null, topic, payload, qos, retained, null);
+        send(MqttConnector.DefaultClientId, topic, payload, qos, retained, null);
     }
 
     /**
@@ -117,7 +117,7 @@ public class MqttPublisher {
      * @throws NullPointerException     if client not exists
      */
     public void send(String topic, Object payload, int qos, boolean retained, IMqttActionListener callback) {
-        send(null, topic, payload, qos, retained, callback);
+        send(MqttConnector.DefaultClientId, topic, payload, qos, retained, callback);
     }
 
 

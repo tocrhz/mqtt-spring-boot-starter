@@ -34,6 +34,11 @@ public class ConnectionProperties {
     private Boolean enableSharedSubscription;
 
     /**
+     * 发布消息默认使用的QOS, 默认 0.
+     */
+    private Integer defaultPublishQos;
+
+    /**
      * 最大重连等待时间(秒).
      *
      * @see MqttConnectOptions#setMaxReconnectDelay(int)
@@ -188,6 +193,13 @@ public class ConnectionProperties {
         return enableSharedSubscription;
     }
 
+    /**
+     * 发布消息默认使用的QOS, 默认 0.
+     */
+    public Integer getDefaultPublishQos() {
+        return defaultPublishQos;
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -230,5 +242,9 @@ public class ConnectionProperties {
 
     public void setEnableSharedSubscription(Boolean enableSharedSubscription) {
         this.enableSharedSubscription = enableSharedSubscription;
+    }
+
+    public void setDefaultPublishQos(Integer defaultPublishQos) {
+        this.defaultPublishQos = defaultPublishQos;
     }
 }

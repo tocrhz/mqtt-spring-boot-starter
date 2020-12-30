@@ -13,7 +13,7 @@ MQTT starter for Spring Boot, easier to use.
 <dependency>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>1.1.2</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
@@ -116,10 +116,10 @@ public class DemoService {
     }
 
     public void sendTest(){
-        publisher.send("test/send", "test message, default QOS is 1.");
-        publisher.send("test/send", "Specify QOS as 0.", 0);
+        publisher.send("test/send", "test message, default QOS is 0.");
+        publisher.send("test/send", "Specify QOS as 1.", 1);
         publisher.send("test/send", "Specify QOS as 2.", 2, false);
-        publisher.send("multi_client_1", "test/send", "test message, default QOS is 1.");
+        publisher.send("multi_client_1", "test/send", "test message, default QOS is 0.");
     }
 }
 ```
