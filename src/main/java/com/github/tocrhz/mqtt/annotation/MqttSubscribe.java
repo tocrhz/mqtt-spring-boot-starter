@@ -41,7 +41,7 @@ public @interface MqttSubscribe {
      * <p>
      * for topic one-to-one.
      * <p>
-     * If not one-to-one. fill by last qos and ignore the superfluous.
+     * If not one-to-one. fill by last shared and ignore the superfluous.
      *
      * @return true or false
      * @see #groups()
@@ -56,7 +56,7 @@ public @interface MqttSubscribe {
      * if group not blank, use '$share/&lt;group&gt;/&lt;topic&gt;'
      * for topic one-to-one.
      * <p>
-     * If not one-to-one. fill by last qos and ignore the superfluous.
+     * If not one-to-one. fill by last groups and ignore the superfluous.
      *
      * @return String[] groups
      */

@@ -19,4 +19,9 @@ public @interface NamedValue {
      * @return Parameter name.
      */
     String value();
+
+    /**
+     * if required==true && value == null, method does not execute.
+     */
+    boolean required() default false;
 }

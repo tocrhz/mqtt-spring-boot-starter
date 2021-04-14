@@ -5,6 +5,7 @@ import com.github.tocrhz.mqtt.annotation.Payload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -17,6 +18,7 @@ final class ParameterModel {
     private final static Logger log = LoggerFactory.getLogger(ParameterModel.class);
 
     private boolean sign;
+    private boolean required;
     private Class<?> type;
     private String name;
     private Object defaultValue;
@@ -38,13 +40,18 @@ final class ParameterModel {
             if (annotations != null && annotations.length > 0) {
                 for (Annotation annotation : annotations) {
                     if (annotation.annotationType() == NamedValue.class) {
-                        NamedValue pathValue = (NamedValue) annotation;
-                        model.name = pathValue.value();
+                        NamedValue namedValue = (NamedValue) annotation;
+                        model.required = namedValue.required();
+                        model.name = namedValue.value();
                     }
                     if (annotation.annotationType() == Payload.class) {
                         Payload payload = (Payload) annotation;
                         model.sign = true;
+                        model.required = payload.required();
                         model.converters = toConverters(payload.value());
+                    }
+                    if (annotation.annotationType() == NonNull.class) {
+                        model.required = true;
                     }
                 }
             }
@@ -60,7 +67,7 @@ final class ParameterModel {
             LinkedList<Converter<Object, Object>> converters = new LinkedList<>();
             for (Class<? extends Converter<?, ?>> covert : classes) {
                 try {
-                    converters.add((Converter<Object, Object>) covert.newInstance());
+                    converters.add((Converter<Object, Object>) covert.getDeclaredConstructor().newInstance());
                 } catch (Exception e) {
                     log.error("Create converter instance failed.", e);
                 }
@@ -71,6 +78,10 @@ final class ParameterModel {
 
     public boolean isSign() {
         return sign;
+    }
+
+    public boolean isRequired() {
+        return required;
     }
 
     public Class<?> getType() {

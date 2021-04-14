@@ -2,6 +2,7 @@ package com.github.tocrhz.mqtt.subscriber;
 
 import com.github.tocrhz.mqtt.annotation.MqttSubscribe;
 import com.github.tocrhz.mqtt.autoconfigure.MqttConversionService;
+import com.github.tocrhz.mqtt.exception.NullParameterException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,8 @@ public class MqttSubscriber {
         if (matched.isPresent()) {
             try {
                 method.invoke(bean, fillParameters(matched.get(), topic, mqttMessage));
+            } catch (NullParameterException ignored) {
+                // 如果参数为空则不执行方法
             } catch (Throwable throwable) {
                 log.error("message handler error: {}", throwable.getMessage(), throwable);
             }
@@ -151,6 +154,9 @@ public class MqttSubscriber {
                 value = MqttConversionService.getSharedInstance().fromBytes(mqttMessage.getPayload(), target, converters);
             }
             if (value == null) {
+                if (parameter.isRequired()) {
+                    throw new NullParameterException();
+                }
                 value = parameter.getDefaultValue();
             }
             objects.add(value);
