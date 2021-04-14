@@ -41,13 +41,13 @@ final class ParameterModel {
                 for (Annotation annotation : annotations) {
                     if (annotation.annotationType() == NamedValue.class) {
                         NamedValue namedValue = (NamedValue) annotation;
-                        model.required = namedValue.required();
+                        model.required = model.required || namedValue.required();
                         model.name = namedValue.value();
                     }
                     if (annotation.annotationType() == Payload.class) {
                         Payload payload = (Payload) annotation;
                         model.sign = true;
-                        model.required = payload.required();
+                        model.required = model.required || payload.required();
                         model.converters = toConverters(payload.value());
                     }
                     if (annotation.annotationType() == NonNull.class) {
