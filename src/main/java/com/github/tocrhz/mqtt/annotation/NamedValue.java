@@ -21,7 +21,8 @@ public @interface NamedValue {
     String value();
 
     /**
-     * if required==true && value == null, method does not execute.
+     * if required is true and value is null, method does not execute.
+     * @return boolean
      */
     boolean required() default false;
 }

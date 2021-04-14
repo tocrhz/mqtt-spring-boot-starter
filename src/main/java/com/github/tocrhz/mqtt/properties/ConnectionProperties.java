@@ -195,6 +195,7 @@ public class ConnectionProperties {
 
     /**
      * 发布消息默认使用的QOS, 默认 0.
+     * @return Integer
      */
     public Integer getDefaultPublishQos() {
         return defaultPublishQos;

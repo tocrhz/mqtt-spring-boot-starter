@@ -74,7 +74,9 @@ public class MqttAutoConfiguration {
      * default MqttConnector.
      * <p>
      * Ensure the final initialization, the order is {@link org.springframework.core.Ordered#LOWEST_PRECEDENCE}
-     *
+     * @param adapter MqttConnectOptionsAdapter
+     * @param properties MqttProperties
+     * @param clientAdapter MqttAsyncClientAdapter
      * @return MqttConnector
      */
     @Bean

@@ -31,7 +31,8 @@ public @interface Payload {
     Class<? extends Converter<?, ?>>[] value() default {};
 
     /**
-     * if required==true && value == null, method does not execute.
+     * if required is true and value is null, method does not execute.
+     * @return boolean
      */
     boolean required() default false;
 }
