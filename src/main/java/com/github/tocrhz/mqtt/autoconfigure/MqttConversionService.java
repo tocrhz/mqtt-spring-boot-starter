@@ -121,7 +121,7 @@ public class MqttConversionService extends GenericConversionService {
         }
         Class<?> src = payload.getClass();
         if (target == src) {
-            return source;
+            return payload;
         } else {
             if (canConvert(src, target)) {
                 return convert(payload, target);
