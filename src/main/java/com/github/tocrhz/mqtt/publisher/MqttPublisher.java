@@ -133,7 +133,7 @@ public class MqttPublisher {
         Assert.isTrue(topic != null && !topic.trim().isEmpty(), "topic cannot be blank.");
         IMqttAsyncClient client = Objects.requireNonNull(MqttConnector.getClientById(clientId));
         byte[] bytes = MqttConversionService.getSharedInstance().toBytes(payload);
-        if (bytes == null || bytes.length == 0) {
+        if (bytes == null) {
             return;
         }
         MqttMessage message = toMessage(bytes, qos, retained);
