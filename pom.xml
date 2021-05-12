@@ -49,6 +49,7 @@
         <paho.mqttv3.version>1.2.5</paho.mqttv3.version>
         <jackson.version>2.11.2</jackson.version>
         <lombok.version>1.18.12</lombok.version>
+        <jupiter.version>5.7.1</jupiter.version>
     </properties>
 
     <dependencies>
@@ -90,6 +91,13 @@
             <version>${jackson.version}</version>
             <optional>true</optional>
         </dependency>
+        
+        <dependency>
+    		<groupId>org.junit.jupiter</groupId>
+    		<artifactId>junit-jupiter-engine</artifactId>
+    		<version>${jupiter.version}</version>
+		</dependency>
+        
     </dependencies>
 
     <build>

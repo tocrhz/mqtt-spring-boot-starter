@@ -24,7 +24,7 @@ public class TopicPair {
 
     private String topic;
     private Pattern pattern;
-    private String[] params;
+    private TopicParam[] params;
     private int qos;
     private boolean shared;
     private String group;
@@ -35,9 +35,9 @@ public class TopicPair {
         Assert.isTrue(qos <= 2, "qos max value is 2");
         TopicPair topicPair = new TopicPair();
         if (topic.contains("{")) {
-            LinkedList<String> params = new LinkedList<>();
+            LinkedList<TopicParam> params = new LinkedList<>();
             topicPair.pattern = toPattern(topic, params, paramTypeMap);
-            topicPair.params = params.toArray(new String[0]);
+            topicPair.params = params.toArray(new TopicParam[0]);
             topicPair.topic = TO_TOPIC.matcher(topic).replaceAll("+");
         } else {
             topicPair.topic = topic;
@@ -49,23 +49,26 @@ public class TopicPair {
         return topicPair;
     }
 
-    private static Pattern toPattern(String topic, LinkedList<String> params, HashMap<String, Class<?>> paramTypeMap) {
+    private static Pattern toPattern(String topic, LinkedList<TopicParam> params, HashMap<String, Class<?>> paramTypeMap) {
         String pattern = replaceSymbols(topic);
         Matcher matcher = TO_PATTERN.matcher(pattern);
         StringBuffer buffer = new StringBuffer("^");
+        int group = 1;
         while (matcher.find()) {
             String paramName = matcher.group(1);
-            params.add(paramName);
+            params.add(new TopicParam(paramName, group));
             if (paramTypeMap.containsKey(paramName)) {
                 Class<?> paramType = paramTypeMap.get(paramName);
                 if (Number.class.isAssignableFrom(paramType)) {
                     matcher.appendReplacement(buffer, NUMBER_PARAM);
+                    ++group;
                 } else {
                     matcher.appendReplacement(buffer, STRING_PARAM);
                 }
             } else {
                 matcher.appendReplacement(buffer, STRING_PARAM);
             }
+            ++group;
         }
         matcher.appendTail(buffer);
         buffer.append("$");
@@ -101,8 +104,8 @@ public class TopicPair {
             Matcher matcher = pattern.matcher(topic);
             if (matcher.find()) {
                 for (int i = 0; i < params.length; i++) {
-                    String group = matcher.group(i + 1);
-                    map.put(params[i], group);
+                    String group = matcher.group(params[i].getAt());
+                    map.put(params[i].getName(), group);
                 }
             }
         }
