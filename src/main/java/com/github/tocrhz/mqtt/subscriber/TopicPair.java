@@ -154,6 +154,6 @@ public class TopicPair {
                     sb.append(ch);
             }
         }
-        return sb.toString();
+        return sb.toString().replaceAll("/#$", "/.*");
     }
 }
