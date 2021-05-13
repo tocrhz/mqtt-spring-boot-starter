@@ -103,9 +103,9 @@ public class TopicPair {
         if (pattern != null) {
             Matcher matcher = pattern.matcher(topic);
             if (matcher.find()) {
-                for (int i = 0; i < params.length; i++) {
-                    String group = matcher.group(params[i].getAt());
-                    map.put(params[i].getName(), group);
+                for (TopicParam param : params) {
+                    String group = matcher.group(param.getAt());
+                    map.put(param.getName(), group);
                 }
             }
         }

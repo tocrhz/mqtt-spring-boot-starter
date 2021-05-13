@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>1.2.3</version>
+    <version>1.2.4</version>
     <name>mqtt-spring-boot-starter</name>
     <description>MQTT starter for Spring Boot, easier to use.</description>
 
@@ -96,6 +96,8 @@
     		<groupId>org.junit.jupiter</groupId>
     		<artifactId>junit-jupiter-engine</artifactId>
     		<version>${jupiter.version}</version>
+            <optional>true</optional>
+            <scope>test</scope>
 		</dependency>
         
     </dependencies>
