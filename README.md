@@ -2,7 +2,7 @@
 
 MQTT starter for Spring Boot, easier to use.
 
-> Support spring boot version: 1.5.x ~ 2.4.0
+> Support spring boot version: 2.x
 >
 > This document is machine translated.
 
