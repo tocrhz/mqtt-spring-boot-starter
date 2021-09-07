@@ -207,3 +207,23 @@ public class MqttSslConfiguration implements MqttConnectOptionsAdapter {
 ```
 
 
+
+#### Pre-interceptor 
+
+Triggered before all @MqttSubscribe() 
+
+```
+@Component
+public class DefaultPreInterceptor implements PreInterceptor {
+
+    private final static Logger log = LoggerFactory.getLogger(DefaultPreInterceptor.class);
+
+    @Override
+    public void receiveHandler(String clientId, String topic, MqttMessage mqttMessage) {
+        log.debug("receive clientId: [{}] topic: [{}]  Payload: [{}]", clientId, topic, new String(mqttMessage.getPayload()));
+    }
+
+}
+
+```
+

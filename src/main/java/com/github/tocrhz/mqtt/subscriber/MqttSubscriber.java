@@ -3,6 +3,7 @@ package com.github.tocrhz.mqtt.subscriber;
 import com.github.tocrhz.mqtt.annotation.MqttSubscribe;
 import com.github.tocrhz.mqtt.autoconfigure.MqttConversionService;
 import com.github.tocrhz.mqtt.exception.NullParameterException;
+import com.github.tocrhz.mqtt.interceptor.PreInterceptor;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,8 @@ public class MqttSubscriber {
         Optional<TopicPair> matched = matched(clientId, topic);
         if (matched.isPresent()) {
             try {
+                // 执行接收消息的前置拦截器
+                preInterceptors.forEach(r -> r.receiveHandler(clientId, topic, mqttMessage));
                 method.invoke(bean, fillParameters(matched.get(), topic, mqttMessage));
             } catch (NullParameterException ignored) {
                 // 如果参数为空则不执行方法
@@ -37,6 +40,7 @@ public class MqttSubscriber {
     private Object bean;
     private Method method;
     private LinkedList<ParameterModel> parameters;
+    private Collection<PreInterceptor> preInterceptors;
     private int order;
     private boolean signPayload = false;
 
@@ -192,6 +196,33 @@ public class MqttSubscriber {
             }
         }
         return false;
+    }
+
+    /**
+     * 添加前置拦截器
+     *
+     * @param interceptor
+     * @author WangChenChen
+     * @date 2021/9/7 16:24
+     */
+    public MqttSubscriber addPreInterceptor(PreInterceptor interceptor) {
+        if (preInterceptors == null) {
+            preInterceptors = new LinkedList<>();
+        }
+        preInterceptors.add(interceptor);
+        return this;
+    }
+
+
+    /**
+     * 添加前置拦截器
+     *
+     * @param interceptor
+     * @author WangChenChen
+     * @date 2021/9/7 16:24
+     */
+    public void addPreInterceptors(Collection<PreInterceptor> interceptor) {
+        preInterceptors = interceptor;
     }
 
     @Override

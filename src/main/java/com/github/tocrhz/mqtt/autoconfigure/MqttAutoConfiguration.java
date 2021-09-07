@@ -1,5 +1,7 @@
 package com.github.tocrhz.mqtt.autoconfigure;
 
+import com.github.tocrhz.mqtt.interceptor.DefaultPreInterceptor;
+import com.github.tocrhz.mqtt.interceptor.PreInterceptor;
 import com.github.tocrhz.mqtt.properties.MqttProperties;
 import com.github.tocrhz.mqtt.publisher.MqttPublisher;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
@@ -13,6 +15,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 /**
  * mqtt auto configuration
@@ -74,8 +77,9 @@ public class MqttAutoConfiguration {
      * default MqttConnector.
      * <p>
      * Ensure the final initialization, the order is {@link org.springframework.core.Ordered#LOWEST_PRECEDENCE}
-     * @param adapter MqttConnectOptionsAdapter
-     * @param properties MqttProperties
+     *
+     * @param adapter       MqttConnectOptionsAdapter
+     * @param properties    MqttProperties
      * @param clientAdapter MqttAsyncClientAdapter
      * @return MqttConnector
      */
@@ -86,4 +90,12 @@ public class MqttAutoConfiguration {
         connector.start(clientAdapter, properties, adapter);
         return connector;
     }
+
+
+    @Bean
+    @ConditionalOnMissingBean(PreInterceptor.class)
+    public DefaultPreInterceptor defaultPreInterceptor() {
+        return new DefaultPreInterceptor();
+    }
+
 }
