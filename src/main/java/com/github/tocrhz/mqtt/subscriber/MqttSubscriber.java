@@ -199,11 +199,10 @@ public class MqttSubscriber {
     }
 
     /**
+     * 2021/9/7 16:24
      * 添加前置拦截器
      *
-     * @param interceptor
      * @author WangChenChen
-     * @date 2021/9/7 16:24
      */
     public MqttSubscriber addPreInterceptor(PreInterceptor interceptor) {
         if (preInterceptors == null) {
@@ -215,11 +214,10 @@ public class MqttSubscriber {
 
 
     /**
+     * 2021/9/7 16:24
      * 添加前置拦截器
      *
-     * @param interceptor
      * @author WangChenChen
-     * @date 2021/9/7 16:24
      */
     public void addPreInterceptors(Collection<PreInterceptor> interceptor) {
         preInterceptors = interceptor;

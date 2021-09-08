@@ -1,7 +1,6 @@
 package com.github.tocrhz.mqtt.autoconfigure;
 
 import com.github.tocrhz.mqtt.annotation.MqttSubscribe;
-import com.github.tocrhz.mqtt.interceptor.DefaultPreInterceptor;
 import com.github.tocrhz.mqtt.interceptor.PreInterceptor;
 import com.github.tocrhz.mqtt.subscriber.MqttSubscriber;
 import org.slf4j.Logger;
@@ -16,10 +15,11 @@ import org.springframework.stereotype.Component;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.Map;
 
 /**
  * When Bean is initialized, filter out the methods annotated with @MqttSubscribe, and create MqttSubscriber
+ * <p>2021/9/7 16:12  WangChenChen</p>
+ * Add pre-interceptor for receiving messages
  *
  * @author tocrhz
  * @see MqttSubscribe
@@ -27,8 +27,6 @@ import java.util.Map;
  */
 @Component
 public class MqttSubscribeProcessor implements BeanPostProcessor, ApplicationContextAware {
-
-    private final static Logger log = LoggerFactory.getLogger(MqttSubscribeProcessor.class);
 
     // subscriber cache
     public static final LinkedList<MqttSubscriber> SUBSCRIBERS = new LinkedList<>();

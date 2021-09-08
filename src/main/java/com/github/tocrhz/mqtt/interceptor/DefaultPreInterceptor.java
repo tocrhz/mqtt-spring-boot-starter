@@ -8,9 +8,8 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Pre-interceptor for receiving messages
  * </p>
- *
+ * 2021/9/7 16:12
  * @author WangChenChen
- * @date 2021/9/7 16:12
  */
 
 public class DefaultPreInterceptor implements PreInterceptor {
