@@ -5,7 +5,6 @@ import com.github.tocrhz.mqtt.annotation.Payload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -50,9 +49,9 @@ final class ParameterModel {
                         model.required = model.required || payload.required();
                         model.converters = toConverters(payload.value());
                     }
-                    if (annotation.annotationType() == NonNull.class) {
-                        model.required = true;
-                    }
+//                    if (annotation.annotationType() == NonNull.class) {
+//                        model.required = true;
+//                    }
                 }
             }
         }

@@ -6,6 +6,9 @@ MQTT starter for Spring Boot, easier to use.
 >
 > This document is machine translated.
 
+## 0. 修改记录
+
+2021-11-05 增加一个配置接口, 可以在client创建之前任意修改配置文件的内容; 去除@NonNull的使用(该注解springboot1.x中不存在)
 
 ## 1. import
 
@@ -13,7 +16,7 @@ MQTT starter for Spring Boot, easier to use.
 <dependency>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>1.2.4</version>
+    <version>1.2.5</version>
 </dependency>
 ```
 
@@ -170,6 +173,22 @@ public class MqttPayloadConfig {
                 };
             }
         };
+    }
+}
+```
+
+#### 配置
+
+添加 `MqttConfigurer` 接口, 可以在客户端创建完成前任意修改MQTT相关的配置.
+
+e.g.
+
+```java
+@Component
+public class MyselfMqttConfigurer implements MqttConfigurer { 
+    
+    public void configure(MqttProperties properties) {
+        // 修改
     }
 }
 ```

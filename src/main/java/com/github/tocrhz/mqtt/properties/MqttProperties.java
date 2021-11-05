@@ -2,7 +2,6 @@ package com.github.tocrhz.mqtt.properties;
 
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.lang.NonNull;
 import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -110,7 +109,7 @@ public class MqttProperties extends ConnectionProperties {
      *
      * @return MqttConnectOptions对象
      */
-    private MqttConnectOptions toOptions(@NonNull String clientId) {
+    private MqttConnectOptions toOptions(String clientId) {
         ConnectionProperties properties = clients.get(clientId);
         if (properties == null) {
             if (clientId.equals(getClientId())) {

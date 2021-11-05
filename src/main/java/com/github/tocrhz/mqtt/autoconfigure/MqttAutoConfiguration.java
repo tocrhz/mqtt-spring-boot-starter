@@ -32,11 +32,15 @@ public class MqttAutoConfiguration {
         MqttConversionService.addBeans(MqttConversionService.getSharedInstance(), beanFactory);
     }
 
-    /**
-     * default MqttConnectOptionsAdapter, nothing to do.
-     *
-     * @return MqttConnectOptionsAdapter
-     */
+
+    @Bean
+    @Order(1010)
+    @ConditionalOnMissingBean(MqttConfigurer.class)
+    public MqttConfigurer mqttConfigurer() {
+        return (properties) -> {
+        };
+    }
+
     @Bean
     @Order(1010)
     @ConditionalOnMissingBean(MqttConnectOptionsAdapter.class)
@@ -74,16 +78,22 @@ public class MqttAutoConfiguration {
      * default MqttConnector.
      * <p>
      * Ensure the final initialization, the order is {@link org.springframework.core.Ordered#LOWEST_PRECEDENCE}
-     * @param adapter MqttConnectOptionsAdapter
-     * @param properties MqttProperties
-     * @param clientAdapter MqttAsyncClientAdapter
+     *
+     * @param configurer     MqttConfigurer
+     * @param optionsAdapter MqttConnectOptionsAdapter
+     * @param properties     MqttProperties
+     * @param clientAdapter  MqttAsyncClientAdapter
      * @return MqttConnector
      */
     @Bean
     @Order // Ordered.LOWEST_PRECEDENCE
-    public MqttConnector mqttConnector(MqttAsyncClientAdapter clientAdapter, MqttProperties properties, MqttConnectOptionsAdapter adapter) {
+    public MqttConnector mqttConnector(MqttAsyncClientAdapter clientAdapter
+            , MqttConnectOptionsAdapter optionsAdapter
+            , MqttProperties properties
+            , MqttConfigurer configurer) {
         MqttConnector connector = new MqttConnector();
-        connector.start(clientAdapter, properties, adapter);
+        configurer.configure(properties);
+        connector.start(clientAdapter, properties, optionsAdapter);
         return connector;
     }
 }
