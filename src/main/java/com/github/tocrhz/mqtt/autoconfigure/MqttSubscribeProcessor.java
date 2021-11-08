@@ -21,7 +21,7 @@ import java.util.LinkedList;
 public class MqttSubscribeProcessor implements BeanPostProcessor {
 
     // subscriber cache
-    public static final LinkedList<MqttSubscriber> SUBSCRIBERS = new LinkedList<>();
+    static final LinkedList<MqttSubscriber> SUBSCRIBERS = new LinkedList<>();
 
     @Value("${mqtt.disable:false}")
     private Boolean disable;

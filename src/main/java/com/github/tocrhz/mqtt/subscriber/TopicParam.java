@@ -5,7 +5,7 @@ package com.github.tocrhz.mqtt.subscriber;
  */
 class TopicParam {
     private String name;
-    private int at;
+    private int at; // 正则匹配的参数位置.
 
     public TopicParam(String name, int at) {
         super();

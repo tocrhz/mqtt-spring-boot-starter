@@ -16,7 +16,7 @@ import java.util.LinkedList;
 final class ParameterModel {
     private final static Logger log = LoggerFactory.getLogger(ParameterModel.class);
 
-    private boolean sign;
+    private boolean sign; // 标记为消息内容, 若参数为String类型, 并且无标记, 则赋值topic.
     private boolean required;
     private Class<?> type;
     private String name;

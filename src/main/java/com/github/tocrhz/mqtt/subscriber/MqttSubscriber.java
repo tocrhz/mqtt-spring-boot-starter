@@ -27,6 +27,7 @@ public class MqttSubscriber {
                 method.invoke(bean, fillParameters(matched.get(), topic, mqttMessage));
             } catch (NullParameterException ignored) {
                 // 如果参数为空则不执行方法
+                log.debug("fill parameters caught null exception.");
             } catch (Throwable throwable) {
                 log.error("message handler error: {}", throwable.getMessage(), throwable);
             }
@@ -38,7 +39,6 @@ public class MqttSubscriber {
     private Method method;
     private LinkedList<ParameterModel> parameters;
     private int order;
-    private boolean signPayload = false;
 
     private final LinkedList<TopicPair> topics = new LinkedList<>();
 
@@ -47,7 +47,6 @@ public class MqttSubscriber {
         subscriber.bean = bean;
         subscriber.method = method;
         subscriber.parameters = ParameterModel.of(method);
-        subscriber.signPayload = subscriber.parameters.stream().anyMatch(ParameterModel::isSign);
         HashMap<String, Class<?>> paramTypeMap = new HashMap<>();
         subscriber.parameters.stream()
                 .filter(model -> model.getName() != null)
@@ -150,7 +149,7 @@ public class MqttSubscriber {
                 value = fromTopic(pathValueMap.get(name), target);
             } else if (target == String.class) {
                 value = topic;
-            } else if (!signPayload && target.getClassLoader() != null && mqttMessage != null) {
+            } else if (target.getClassLoader() != null && mqttMessage != null) {
                 value = MqttConversionService.getSharedInstance().fromBytes(mqttMessage.getPayload(), target, converters);
             }
             if (value == null) {

@@ -29,6 +29,10 @@ public class TopicPair {
     private boolean shared;
     private String group;
 
+    public static TopicPair of(String topic, int qos) {
+        return of(topic, qos, false, null, new HashMap<>());
+    }
+
     public static TopicPair of(String topic, int qos, boolean shared, String group, HashMap<String, Class<?>> paramTypeMap) {
         Assert.isTrue(topic != null && !topic.isEmpty(), "topic cannot be blank");
         Assert.isTrue(qos >= 0, "qos min value is 0");

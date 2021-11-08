@@ -66,16 +66,20 @@ public class MqttConnector implements DisposableBean {
     // for reconnect
     private final ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(2);
     private MqttProperties properties;
-    public void start(MqttAsyncClientAdapter clientAdapter, MqttProperties properties, MqttConnectOptionsAdapter adapter) {
+    private MqttConfigurer adapter;
+
+    public void start(MqttProperties properties, MqttConfigurer adapter) {
         if (properties.getDisable() == null || !properties.getDisable()) {
+            adapter.setProperties(properties);
+
             // sort subscribe by order.
             MqttSubscribeProcessor.SUBSCRIBERS.sort(Comparator.comparingInt(MqttSubscriber::getOrder));
             // create clients
             this.properties = properties;
+            this.adapter = adapter;
             properties.forEach((id, options) -> {
                 try {
-                    adapter.configure(id, options);
-                    IMqttAsyncClient client = clientAdapter.create(id, options.getServerURIs());
+                    IMqttAsyncClient client = adapter.postCreate(id, options);
                     if (client != null) {
                         // put to map
                         MQTT_CLIENT_MAP.put(id, client);
@@ -165,6 +169,7 @@ public class MqttConnector implements DisposableBean {
         boolean sharedEnable = this.properties.isSharedEnable(clientId);
         try {
             Set<TopicPair> topicPairs = mergeTopics(clientId, sharedEnable);
+            this.adapter.beforeSubscribe(clientId, topicPairs);
             if (topicPairs.isEmpty()) {
                 log.warn("There is no topic has been found for client '{}'.", clientId);
                 return;

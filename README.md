@@ -8,7 +8,9 @@ MQTT starter for Spring Boot, easier to use.
 
 ## 0. 修改记录
 
-2021-11-05 增加一个配置接口, 可以在client创建之前任意修改配置文件的内容; 去除@NonNull的使用(该注解springboot1.x中不存在)
+2021-11-05  
+1. 增加一个配置抽象类, 删除几个配置用的接口(实现挪到抽象类里)  
+2. 去除@NonNull的使用(该注解springboot1.x中不存在)  
 
 ## 1. import
 
@@ -179,50 +181,47 @@ public class MqttPayloadConfig {
 
 #### 配置
 
-添加 `MqttConfigurer` 接口, 可以在客户端创建完成前任意修改MQTT相关的配置.
+通过 `MqttConfigurer` 抽象类, 可以在创建客户端前, 连接前, 订阅前自定义操作.
 
 e.g.
 
 ```java
 @Component
-public class MyselfMqttConfigurer implements MqttConfigurer { 
+public class MyMqttConfigurer extends MqttConfigurer { 
     
-    public void configure(MqttProperties properties) {
-        // 修改
+    /**
+     * 在创建客户端之前, 增删改客户端配置.
+     * <p>清除的原有客户端, 增加客户端 "client01" </p>
+     */
+    public void beforeCreate(ClientRegistry registry) {
+        registry.clear();
+        registry.add("client01", "tcp://localhost:1883");
+    }
+
+
+    /**
+     * 创建客户端.
+     *
+     * @param clientId 客户端ID
+     * @param options  MqttConnectOptions
+     */
+    public IMqttAsyncClient postCreate(String clientId, MqttConnectOptions options) throws MqttException {
+        return new MqttAsyncClient(options.getServerURIs()[0], clientId, new MemoryPersistence());
+    }
+
+    /**
+     * 在创建客户端后, 订阅主题前, 修改订阅的主题.
+     * <p>清除 client01 的原有订阅, 增加订阅 "/test/abc"</p>
+     * 
+     */
+    public void beforeSubscribe(String clientId, Set<TopicPair> topicPairs) {
+        if("client01".equals(clientId)){
+            topicPairs.clear();
+            topicPairs.add(TopicPair.of("/test/abc", 0));
+        }
     }
 }
 ```
 
-#### client 
-
-Implements `MqttAsyncClientAdapter` interface.
-
-```java
-@Configuration
-public class MqttAutoConfiguration implements MqttAsyncClientAdapter{
-
-    public IMqttAsyncClient create(String clientId, String[] serverURIs) throws MqttException {
-        new MqttAsyncClient(serverURI[0], clientId, new MemoryPersistence());
-    }
-}
-```
-
-
-#### ssl or other
-
-Implements `MqttConnectOptionsAdapter` interface.
-
-e.g.
-
-```java
-@Component
-public class MqttSslConfiguration implements MqttConnectOptionsAdapter { 
-    
-    public void configure(String clientId, MqttConnectOptions options) {
-        // ssl
-        options.setSocketFactory(SSLSocketFactory.getDefault());
-    }
-}
-```
 
 

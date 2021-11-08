@@ -3,7 +3,6 @@ package com.github.tocrhz.mqtt.autoconfigure;
 import com.github.tocrhz.mqtt.properties.MqttProperties;
 import com.github.tocrhz.mqtt.publisher.MqttPublisher;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -37,30 +36,10 @@ public class MqttAutoConfiguration {
     @Order(1010)
     @ConditionalOnMissingBean(MqttConfigurer.class)
     public MqttConfigurer mqttConfigurer() {
-        return (properties) -> {
+        return new MqttConfigurer() {
         };
     }
 
-    @Bean
-    @Order(1010)
-    @ConditionalOnMissingBean(MqttConnectOptionsAdapter.class)
-    public MqttConnectOptionsAdapter mqttConnectOptionsAdapter() {
-        return (clientId, options) -> {
-        };
-    }
-
-
-    /**
-     * default MqttClientAdapter
-     *
-     * @return MqttAsyncClientAdapter
-     */
-    @Bean
-    @Order(1010)
-    @ConditionalOnMissingBean(MqttAsyncClientAdapter.class)
-    public MqttAsyncClientAdapter mqttAsyncClientAdapter() {
-        return (clientId, serverURI) -> new MqttAsyncClient(serverURI[0], clientId, new MemoryPersistence());
-    }
 
     /**
      * default MqttPublisher
@@ -79,21 +58,15 @@ public class MqttAutoConfiguration {
      * <p>
      * Ensure the final initialization, the order is {@link org.springframework.core.Ordered#LOWEST_PRECEDENCE}
      *
-     * @param configurer     MqttConfigurer
-     * @param optionsAdapter MqttConnectOptionsAdapter
-     * @param properties     MqttProperties
-     * @param clientAdapter  MqttAsyncClientAdapter
+     * @param configurer    MqttConfigurer
+     * @param properties    MqttProperties
      * @return MqttConnector
      */
     @Bean
     @Order // Ordered.LOWEST_PRECEDENCE
-    public MqttConnector mqttConnector(MqttAsyncClientAdapter clientAdapter
-            , MqttConnectOptionsAdapter optionsAdapter
-            , MqttProperties properties
-            , MqttConfigurer configurer) {
+    public MqttConnector mqttConnector(MqttProperties properties, MqttConfigurer configurer) {
         MqttConnector connector = new MqttConnector();
-        configurer.configure(properties);
-        connector.start(clientAdapter, properties, optionsAdapter);
+        connector.start(properties, configurer);
         return connector;
     }
 }
