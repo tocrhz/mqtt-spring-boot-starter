@@ -77,7 +77,11 @@ public abstract class MqttConfigurer {
         public ClientRegistry add(String clientId, String... uri) {
             Assert.notNull(clientId, "clientId can not be null.");
             ConnectionProperties properties = new ConnectionProperties();
-            properties.setUri(uri);
+            if (uri != null && uri.length > 0) {
+                properties.setUri(uri);
+            } else {
+                properties.setUri(null);
+            }
             mqttProperties.getClients().put(clientId, properties);
             resetClientId(clientId);
             return this;
