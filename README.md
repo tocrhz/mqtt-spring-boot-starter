@@ -8,6 +8,12 @@ MQTT starter for Spring Boot, easier to use.
 
 ## 0. 修改记录
 
+2021-11-09 
+1. 已知bug: ClientRegistry.setDefault 不生效. 
+
+2021-11-08 
+1. 新版本 1.2.5
+
 2021-11-05  
 1. 增加一个配置抽象类, 删除几个配置用的接口(实现挪到抽象类里)  
 2. 去除@NonNull的使用(该注解springboot1.x中不存在)  
