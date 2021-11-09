@@ -130,7 +130,6 @@ public abstract class MqttConfigurer {
          * 设置默认.
          */
         public ClientRegistry setDefault(ConnectionProperties properties) {
-            MqttProperties mqttProperties = new MqttProperties();
             mqttProperties.setUsername(properties.getUsername());
             mqttProperties.setWill(properties.getWill());
             mqttProperties.setAutomaticReconnect(properties.getAutomaticReconnect());
