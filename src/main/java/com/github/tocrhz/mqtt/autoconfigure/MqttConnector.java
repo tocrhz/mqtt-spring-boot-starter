@@ -147,11 +147,7 @@ public class MqttConnector implements DisposableBean {
                 @Override
                 public void messageArrived(String topic, MqttMessage message) {
                     for (MqttSubscriber subscriber : MqttSubscribeProcessor.SUBSCRIBERS) {
-                        try {
-                            subscriber.accept(clientId, topic, message);
-                        } catch (Exception e) {
-                            log.error("Mqtt subscriber process error.", e);
-                        }
+                        subscriber.accept(clientId, topic, message);
                     }
                 }
 

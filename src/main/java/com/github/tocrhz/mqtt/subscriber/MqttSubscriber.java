@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.convert.converter.Converter;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -27,9 +28,9 @@ public class MqttSubscriber {
                 method.invoke(bean, fillParameters(matched.get(), topic, mqttMessage));
             } catch (NullParameterException ignored) {
                 // 如果参数为空则不执行方法
-                log.debug("fill parameters caught null exception.");
-            } catch (Throwable throwable) {
-                log.error("message handler error: {}", throwable.getMessage(), throwable);
+                log.debug("Fill parameters caught null exception.");
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                log.error("Message handler error: {}", e.getMessage(), e);
             }
         }
     }
