@@ -8,11 +8,14 @@ MQTT starter for Spring Boot, easier to use.
 
 ## 0. 修改记录
 
+2021-11-16 `v1.2.6`
+1. 去掉默认的异常处理. 
+
 2021-11-09 
 1. 已知bug: ClientRegistry.setDefault 不生效. 
 
 2021-11-08 
-1. 新版本 1.2.5
+1. 新版本 `v1.2.5`
 
 2021-11-05  
 1. 增加一个配置抽象类, 删除几个配置用的接口(实现挪到抽象类里)  
@@ -24,7 +27,7 @@ MQTT starter for Spring Boot, easier to use.
 <dependency>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>1.2.5</version>
+    <version>1.2.6</version>
 </dependency>
 ```
 

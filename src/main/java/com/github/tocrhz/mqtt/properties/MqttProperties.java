@@ -109,7 +109,7 @@ public class MqttProperties extends ConnectionProperties {
      *
      * @return MqttConnectOptions对象
      */
-    private MqttConnectOptions toOptions(String clientId) {
+    public MqttConnectOptions toOptions(String clientId) {
         ConnectionProperties properties = clients.get(clientId);
         if (properties == null) {
             if (clientId.equals(getClientId())) {
