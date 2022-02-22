@@ -8,6 +8,9 @@ MQTT starter for Spring Boot, easier to use.
 
 ## 0. 修改记录
 
+2022-02-22 `v1.2.7`
+1. 配置调整, `mqtt.clients` 中明确配置的 `client-id` 优先级更高
+
 2021-11-16 `v1.2.6`
 1. 去掉默认的异常处理. 
 
@@ -45,9 +48,12 @@ mqtt.client-id=default_client
 mqtt.username=username
 mqtt.password=password
 
+# mqtt.clients 中明确配置的 client-id 优先级更高
+mqtt.clients.multi_client_1.client-id=new_client
 mqtt.clients.multi_client_1.uri=tcp://127.0.0.1:1883
 mqtt.clients.multi_client_1.username=username
 mqtt.clients.multi_client_1.password=password
+
 mqtt.clients.multi_client_2.uri=tcp://127.0.0.1:1883
 mqtt.clients.multi_client_2.username=username
 mqtt.clients.multi_client_2.password=password

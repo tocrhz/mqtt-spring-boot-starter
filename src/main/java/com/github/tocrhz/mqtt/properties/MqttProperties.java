@@ -23,11 +23,6 @@ public class MqttProperties extends ConnectionProperties {
     private Boolean disable = false;
 
     /**
-     * 客户端ID
-     */
-    private String clientId;
-
-    /**
      * 多个客户端配置, key:clientId, value:配置
      */
     private Map<String, ConnectionProperties> clients = new LinkedHashMap<>();
@@ -43,19 +38,6 @@ public class MqttProperties extends ConnectionProperties {
 
     public void setDisable(Boolean disable) {
         this.disable = disable;
-    }
-
-    /**
-     * 客户端ID
-     *
-     * @return String
-     */
-    public String getClientId() {
-        return clientId;
-    }
-
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
     }
 
     /**
@@ -82,6 +64,18 @@ public class MqttProperties extends ConnectionProperties {
             biConsumer.accept(getClientId(), defaultOptions);
         }
         if (clients != null && !clients.isEmpty()) {
+            // 先遍历一遍处理下clientId冲突的问题
+            String[] clientIds = clients.keySet().toArray(new String[0]);
+            for (String clientId : clientIds) {
+                ConnectionProperties properties = clients.get(clientId);
+                String localClientId = properties.getClientId();
+                if (StringUtils.hasText(localClientId) && !localClientId.equals(clientId)){
+                    clients.remove(clientId);
+                    clients.put(localClientId, properties);
+                }else {
+                    properties.setClientId(clientId);
+                }
+            }
             clients.forEach((id, prop) -> {
                 MqttConnectOptions options = toOptions(id);
                 if (options != null) {
@@ -97,7 +91,7 @@ public class MqttProperties extends ConnectionProperties {
      * @return MqttConnectOptions对象
      */
     private MqttConnectOptions toOptions() {
-        if (StringUtils.hasLength(getClientId())) {
+        if (StringUtils.hasText(getClientId())) {
             return toOptions(getClientId());
         } else {
             return null;
@@ -131,13 +125,13 @@ public class MqttProperties extends ConnectionProperties {
         options.setAutomaticReconnect(properties.getAutomaticReconnect());
         options.setExecutorServiceTimeout(properties.getExecutorServiceTimeout());
         options.setServerURIs(properties.getUri());
-        if (StringUtils.hasLength(properties.getUsername()) && StringUtils.hasLength(properties.getPassword())) {
+        if (StringUtils.hasText(properties.getUsername()) && StringUtils.hasText(properties.getPassword())) {
             options.setUserName(properties.getUsername());
             options.setPassword(properties.getPassword().toCharArray());
         }
         if (properties.getWill() != null) {
             WillProperties will = properties.getWill();
-            if (StringUtils.hasLength(will.getTopic()) && StringUtils.hasLength(will.getPayload())) {
+            if (StringUtils.hasText(will.getTopic()) && StringUtils.hasText(will.getPayload())) {
                 options.setWill(will.getTopic(), will.getPayload().getBytes(StandardCharsets.UTF_8), will.getQos(), will.getRetained());
             }
         }

@@ -31,7 +31,7 @@ public class MqttConnector implements DisposableBean {
     public static int DefaultPublishQos;
 
     public static IMqttAsyncClient getDefaultClient() {
-        if (StringUtils.hasLength(DefaultClientId)) {
+        if (StringUtils.hasText(DefaultClientId)) {
             return MQTT_CLIENT_MAP.get(DefaultClientId);
         } else if (!MQTT_CLIENT_MAP.isEmpty()) {
             return MQTT_CLIENT_MAP.values().iterator().next();
@@ -40,7 +40,7 @@ public class MqttConnector implements DisposableBean {
     }
 
     public static int getDefaultQosById(String clientId) {
-        if (StringUtils.hasLength(clientId)) {
+        if (StringUtils.hasText(clientId)) {
             return MQTT_DEFAULT_QOS_MAP.getOrDefault(clientId, 0);
         } else {
             return DefaultPublishQos;
@@ -57,7 +57,7 @@ public class MqttConnector implements DisposableBean {
      * @see MqttConnector#getDefaultClient()
      */
     public static IMqttAsyncClient getClientById(String clientId) {
-        if (StringUtils.hasLength(clientId)) {
+        if (StringUtils.hasText(clientId)) {
             return MQTT_CLIENT_MAP.get(clientId);
         } else {
             return getDefaultClient();
@@ -107,7 +107,7 @@ public class MqttConnector implements DisposableBean {
                 if (client != null) {
                     MQTT_CLIENT_MAP.put(client.getClientId(), client);
                     MQTT_DEFAULT_QOS_MAP.put(client.getClientId(), properties.getDefaultPublishQos(client.getClientId()));
-                    if (!StringUtils.hasLength(DefaultClientId)) {
+                    if (!StringUtils.hasText(DefaultClientId)) {
                         DefaultClientId = client.getClientId();
                         DefaultPublishQos = MQTT_DEFAULT_QOS_MAP.get(client.getClientId());
                         log.info("Default mqtt client is '{}'", DefaultClientId);
@@ -228,7 +228,7 @@ public class MqttConnector implements DisposableBean {
                 ++i;
             }
             client.subscribe(topics, QOSs);
-            log.info("Mqtt client '{}' subscribe success. topics : " + sj.toString(), clientId);
+            log.info("Mqtt client '{}' subscribe success. topics : " + sj, clientId);
         } catch (MqttException e) {
             log.error("Mqtt client '{}' subscribe failure.", clientId, e);
         }

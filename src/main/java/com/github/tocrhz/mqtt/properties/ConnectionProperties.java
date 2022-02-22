@@ -15,6 +15,11 @@ public class ConnectionProperties {
     private String[] uri = new String[]{"tcp://127.0.0.1:1883"};
 
     /**
+     * 客户端ID
+     */
+    private String clientId;
+
+    /**
      * 用户名.
      *
      * @see MqttConnectOptions#setUserName(String)
@@ -84,6 +89,19 @@ public class ConnectionProperties {
      * 遗愿相关配置.
      */
     private WillProperties will;
+
+    /**
+     * 客户端ID
+     *
+     * @return String
+     */
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
 
     /**
      * 最大重连等待时间(秒).

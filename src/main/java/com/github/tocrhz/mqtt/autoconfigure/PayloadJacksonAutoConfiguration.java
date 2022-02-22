@@ -91,9 +91,9 @@ public class PayloadJacksonAutoConfiguration {
     }
 
     public static class MqttDefaultJacksonModule extends SimpleModule {
-        public static final Version VERSION = VersionUtil.parseVersion("1.1.0",
+        public static final Version VERSION = VersionUtil.parseVersion("1.2.7",
                 "com.github.tocrhz",
-                "spring-boot-starter-mqtt");
+                "mqtt-spring-boot-starter");
 
         private final static ZoneId ZONE_ID = ZoneId.of("GMT+8");
         private final static DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -162,7 +162,7 @@ public class PayloadJacksonAutoConfiguration {
             @Override
             public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
                 String value = p.getValueAsString();
-                if (StringUtils.hasLength(value)) {
+                if (StringUtils.hasText(value)) {
                     return LocalDateTime.parse(value, DATE_TIME_FORMATTER);
                 }
                 return null;
@@ -172,7 +172,7 @@ public class PayloadJacksonAutoConfiguration {
             @Override
             public LocalDate deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
                 String value = p.getValueAsString();
-                if (StringUtils.hasLength(value)) {
+                if (StringUtils.hasText(value)) {
                     return LocalDate.parse(value, DATE_FORMATTER);
                 }
                 return null;
@@ -182,7 +182,7 @@ public class PayloadJacksonAutoConfiguration {
             @Override
             public LocalTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
                 String value = p.getValueAsString();
-                if (StringUtils.hasLength(value)) {
+                if (StringUtils.hasText(value)) {
                     return LocalTime.parse(value, TIME_FORMATTER);
                 }
                 return null;
@@ -192,7 +192,7 @@ public class PayloadJacksonAutoConfiguration {
             @Override
             public Date deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
                 String value = p.getValueAsString();
-                if (StringUtils.hasLength(value)) {
+                if (StringUtils.hasText(value)) {
                     return Date.from(LocalDateTime.parse(value, DATE_TIME_FORMATTER).atZone(ZONE_ID).toInstant());
                 }
                 return null;

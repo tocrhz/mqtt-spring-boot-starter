@@ -82,6 +82,7 @@ public abstract class MqttConfigurer {
             } else {
                 properties.setUri(null);
             }
+            properties.setClientId(clientId);
             mqttProperties.getClients().put(clientId, properties);
             resetClientId(clientId);
             return this;
@@ -90,13 +91,14 @@ public abstract class MqttConfigurer {
         /**
          * 添加新的client, 添加到配置末尾.
          *
-         * @param clientId   客户端ID
+         * @param clientId   客户端ID, 优先级比配置信息中的高
          * @param properties 配置信息
          * @return ClientRegistry
          */
         public ClientRegistry add(String clientId, ConnectionProperties properties) {
             Assert.notNull(clientId, "clientId can not be null.");
             Assert.notNull(properties, "properties can not be null.");
+            properties.setClientId(clientId);
             mqttProperties.getClients().put(clientId, properties);
             resetClientId(clientId);
             return this;
@@ -130,6 +132,7 @@ public abstract class MqttConfigurer {
          * 设置默认.
          */
         public ClientRegistry setDefault(ConnectionProperties properties) {
+            mqttProperties.setClientId(properties.getClientId());
             mqttProperties.setUsername(properties.getUsername());
             mqttProperties.setWill(properties.getWill());
             mqttProperties.setAutomaticReconnect(properties.getAutomaticReconnect());
@@ -148,6 +151,7 @@ public abstract class MqttConfigurer {
         private void resetClientId(String clientId) {
             if (mqttProperties.getClientId() != null && clientId.equals(mqttProperties.getClientId())) {
                 // 如果 clientId 和默认的 clientId 一样 则将默认的clientId清除掉
+                // 原因：修改后的是通过clients集合保存的，如果与默认的clientId冲突, 则将默认的排除
                 mqttProperties.setClientId(null);
             }
         }
