@@ -18,6 +18,12 @@ import java.util.Objects;
  */
 public class MqttPublisher {
     private final static Logger log = LoggerFactory.getLogger(MqttPublisher.class);
+    private MqttConnector connector;
+
+    public MqttPublisher(MqttConnector connector) {
+
+        this.connector = connector;
+    }
 
     /**
      * 发送消息到指定主题 qos=1
@@ -54,7 +60,7 @@ public class MqttPublisher {
      * @throws NullPointerException     if client not exists
      */
     public void send(String clientId, String topic, Object payload) {
-        send(clientId, topic, payload, MqttConnector.getDefaultQosById(clientId), false, null);
+        send(clientId, topic, payload, connector.getDefaultQosById(clientId), false, null);
     }
 
     /**
@@ -68,7 +74,7 @@ public class MqttPublisher {
      * @throws NullPointerException     if client not exists
      */
     public void send(String clientId, String topic, Object payload, IMqttActionListener callback) {
-        send(clientId, topic, payload, MqttConnector.getDefaultQosById(clientId), false, callback);
+        send(clientId, topic, payload, connector.getDefaultQosById(clientId), false, callback);
     }
 
 
@@ -131,7 +137,7 @@ public class MqttPublisher {
      */
     public void send(String clientId, String topic, Object payload, int qos, boolean retained, IMqttActionListener callback) {
         Assert.isTrue(topic != null && !topic.trim().isEmpty(), "topic cannot be blank.");
-        IMqttAsyncClient client = Objects.requireNonNull(MqttConnector.getClientById(clientId));
+        IMqttAsyncClient client = Objects.requireNonNull(connector.getClientById(clientId));
         byte[] bytes = MqttConversionService.getSharedInstance().toBytes(payload);
         if (bytes == null) {
             return;

@@ -25,30 +25,32 @@ import java.util.stream.Collectors;
  */
 public class MqttConnector implements DisposableBean {
     private final static Logger log = LoggerFactory.getLogger(MqttConnector.class);
-    public final static Map<String, IMqttAsyncClient> MQTT_CLIENT_MAP = new HashMap<>();
-    public final static Map<String, Integer> MQTT_DEFAULT_QOS_MAP = new HashMap<>();
+    public final Map<String, IMqttAsyncClient> mqttClientMap = new HashMap<>();
+    public final Map<String, Integer> mqttDefaultQosMap = new HashMap<>();
+
+    private List<MqttSubscriber> subscribers = new ArrayList<>();
     public static String DefaultClientId;
     public static int DefaultPublishQos;
 
-    public static IMqttAsyncClient getDefaultClient() {
+    public IMqttAsyncClient getDefaultClient() {
         if (StringUtils.hasText(DefaultClientId)) {
-            return MQTT_CLIENT_MAP.get(DefaultClientId);
-        } else if (!MQTT_CLIENT_MAP.isEmpty()) {
-            return MQTT_CLIENT_MAP.values().iterator().next();
+            return mqttClientMap.get(DefaultClientId);
+        } else if (!mqttClientMap.isEmpty()) {
+            return mqttClientMap.values().iterator().next();
         }
         return null;
     }
 
-    public static int getDefaultQosById(String clientId) {
+    public int getDefaultQosById(String clientId) {
         if (StringUtils.hasText(clientId)) {
-            return MQTT_DEFAULT_QOS_MAP.getOrDefault(clientId, 0);
+            return mqttDefaultQosMap.getOrDefault(clientId, 0);
         } else {
             return DefaultPublishQos;
         }
     }
 
     /**
-     * Get from {@link MqttConnector#MQTT_CLIENT_MAP} by client id.
+     * Get from {@link MqttConnector#mqttClientMap} by client id.
      * <p>
      * Call {@link MqttConnector#getDefaultClient()} if client id is if {@code null}.
      *
@@ -56,9 +58,9 @@ public class MqttConnector implements DisposableBean {
      * @return IMqttAsyncClient
      * @see MqttConnector#getDefaultClient()
      */
-    public static IMqttAsyncClient getClientById(String clientId) {
+    public IMqttAsyncClient getClientById(String clientId) {
         if (StringUtils.hasText(clientId)) {
-            return MQTT_CLIENT_MAP.get(clientId);
+            return mqttClientMap.get(clientId);
         } else {
             return getDefaultClient();
         }
@@ -72,8 +74,6 @@ public class MqttConnector implements DisposableBean {
     public void start(MqttProperties properties, MqttConfigurer adapter) {
         if (properties.getDisable() == null || !properties.getDisable()) {
             adapter.setProperties(properties);
-            // sort subscribe by order.
-            MqttSubscribeProcessor.SUBSCRIBERS.sort(Comparator.comparingInt(MqttSubscriber::getOrder));
             // create clients
             this.properties = properties;
             this.adapter = adapter;
@@ -96,7 +96,7 @@ public class MqttConnector implements DisposableBean {
     public void connect(boolean force) {
         properties.forEach((id, options) -> {
             try {
-                if (MQTT_CLIENT_MAP.containsKey(id)) {
+                if (mqttClientMap.containsKey(id)) {
                     if (force) {
                         disconnect(id);
                     } else {
@@ -105,11 +105,11 @@ public class MqttConnector implements DisposableBean {
                 }
                 IMqttAsyncClient client = adapter.postCreate(id, options);
                 if (client != null) {
-                    MQTT_CLIENT_MAP.put(client.getClientId(), client);
-                    MQTT_DEFAULT_QOS_MAP.put(client.getClientId(), properties.getDefaultPublishQos(client.getClientId()));
+                    mqttClientMap.put(client.getClientId(), client);
+                    mqttDefaultQosMap.put(client.getClientId(), properties.getDefaultPublishQos(client.getClientId()));
                     if (!StringUtils.hasText(DefaultClientId)) {
                         DefaultClientId = client.getClientId();
-                        DefaultPublishQos = MQTT_DEFAULT_QOS_MAP.get(client.getClientId());
+                        DefaultPublishQos = mqttDefaultQosMap.get(client.getClientId());
                         log.info("Default mqtt client is '{}'", DefaultClientId);
                     }
                     // connect to mqtt server.
@@ -133,7 +133,6 @@ public class MqttConnector implements DisposableBean {
                         log.info("Connect success. client_id is [{}], brokers is [{}]."
                                 , client.getClientId()
                                 , String.join(",", options.getServerURIs()));
-                        subscribe(client);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -159,7 +158,7 @@ public class MqttConnector implements DisposableBean {
                 public void connectComplete(boolean reconnect, String serverURI) {
                     if (reconnect) {
                         log.info("Mqtt reconnection success.");
-                        subscribe(client);
+                        resubscribe(client);
                     }
                 }
 
@@ -170,7 +169,7 @@ public class MqttConnector implements DisposableBean {
 
                 @Override
                 public void messageArrived(String topic, MqttMessage message) {
-                    for (MqttSubscriber subscriber : MqttSubscribeProcessor.SUBSCRIBERS) {
+                    for (MqttSubscriber subscriber : subscribers) {
                         subscriber.accept(clientId, topic, message);
                     }
                 }
@@ -184,20 +183,25 @@ public class MqttConnector implements DisposableBean {
         }
     }
 
+    // 重新连接
+    private void resubscribe(IMqttAsyncClient client) {
+
+    }
+
     /**
      * 关闭指定的客户端.
      */
     public void disconnect(String clientId) {
         Assert.notNull(clientId, "disconnect client id can not be null.");
         try {
-            IMqttAsyncClient client = MqttConnector.MQTT_CLIENT_MAP.get(clientId);
+            IMqttAsyncClient client = this.mqttClientMap.get(clientId);
             client.disconnect();
-            MqttConnector.MQTT_CLIENT_MAP.remove(clientId);
+            this.mqttClientMap.remove(clientId);
         } catch (MqttException ignored) {
         }
         if (clientId.equals(MqttConnector.DefaultClientId)) {
-            if (MqttConnector.MQTT_CLIENT_MAP.size() > 0) {
-                MqttConnector.DefaultClientId = MqttConnector.MQTT_CLIENT_MAP.keySet().iterator().next();
+            if (this.mqttClientMap.size() > 0) {
+                MqttConnector.DefaultClientId = this.mqttClientMap.keySet().iterator().next();
             } else {
                 MqttConnector.DefaultClientId = null;
             }
@@ -207,14 +211,29 @@ public class MqttConnector implements DisposableBean {
     /**
      * 订阅.
      */
-    private void subscribe(IMqttAsyncClient client) {
-        String clientId = client.getClientId();
-        boolean sharedEnable = this.properties.isSharedEnable(clientId);
+    public void subscribe(MqttSubscriber subscriber) {
+        if (subscriber.getClientIds() == null || subscriber.getClientIds().length == 0) {
+            this.subscribe(null, subscriber);
+        }
+        for (String clientId : subscriber.getClientIds()) {
+            this.subscribe(clientId, subscriber);
+        }
+        this.subscribers.add(subscriber);
+    }
+
+    public void subscribe(String clientId, MqttSubscriber subscriber) {
+        IMqttAsyncClient iMqttAsyncClient = Optional.ofNullable(this.mqttClientMap.get(clientId)).orElse(this.getDefaultClient());
+        boolean sharedEnable = this.properties.isSharedEnable(iMqttAsyncClient.getClientId());
+        if (iMqttAsyncClient == null) {
+            log.warn("There is no mqtt async client has been found {}'.", iMqttAsyncClient.getClientId());
+            return;
+        }
+
         try {
-            Set<TopicPair> topicPairs = mergeTopics(clientId, sharedEnable);
-            this.adapter.beforeSubscribe(clientId, topicPairs);
+            Set<TopicPair> topicPairs = mergeTopics(sharedEnable, subscriber);
+            this.adapter.beforeSubscribe(iMqttAsyncClient.getClientId(), topicPairs);
             if (topicPairs.isEmpty()) {
-                log.warn("There is no topic has been found for client '{}'.", clientId);
+                log.warn("There is no topic has been found for client '{}'.", iMqttAsyncClient.getClientId());
                 return;
             }
             StringJoiner sj = new StringJoiner(",");
@@ -227,10 +246,10 @@ public class MqttConnector implements DisposableBean {
                 sj.add("('" + topics[i] + "', " + QOSs[i] + ")");
                 ++i;
             }
-            client.subscribe(topics, QOSs);
-            log.info("Mqtt client '{}' subscribe success. topics : " + sj, clientId);
+            iMqttAsyncClient.subscribe(topics, QOSs);
+            log.info("Mqtt client '{}' subscribe success. topics : " + sj, iMqttAsyncClient.getClientId());
         } catch (MqttException e) {
-            log.error("Mqtt client '{}' subscribe failure.", clientId, e);
+            log.error("Mqtt client '{}' subscribe failure.", iMqttAsyncClient.getClientId(), e);
         }
     }
 
@@ -238,16 +257,11 @@ public class MqttConnector implements DisposableBean {
      * 合并相似的主题(实际没啥用)
      * merge the same topic
      *
-     * @param clientId clientId
      * @return TopicPairs
      */
-    private Set<TopicPair> mergeTopics(String clientId, boolean sharedEnable) {
+    private Set<TopicPair> mergeTopics(boolean sharedEnable, MqttSubscriber subscriber) {
         Set<TopicPair> topicPairs = new HashSet<>();
-        for (MqttSubscriber subscriber : MqttSubscribeProcessor.SUBSCRIBERS) {
-            if (subscriber.contains(clientId)) {
-                topicPairs.addAll(subscriber.getTopics());
-            }
-        }
+        topicPairs.addAll(subscriber.getTopics());
         if (topicPairs.isEmpty()) {
             return topicPairs;
         }
@@ -283,7 +297,7 @@ public class MqttConnector implements DisposableBean {
     @Override
     public void destroy() {
         log.info("Shutting down mqtt clients.");
-        MQTT_CLIENT_MAP.forEach((id, client) -> {
+        mqttClientMap.forEach((id, client) -> {
             try {
                 if (client.isConnected()) {
                     client.disconnect();
@@ -297,7 +311,7 @@ public class MqttConnector implements DisposableBean {
                 log.error("Mqtt close error: {}", e.getMessage(), e);
             }
         });
-        MQTT_CLIENT_MAP.clear();
+        mqttClientMap.clear();
     }
 
     private class ReConnect implements Runnable {

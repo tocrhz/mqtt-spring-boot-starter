@@ -49,8 +49,8 @@ public class MqttAutoConfiguration {
     @Bean
     @Order(1013)
     @ConditionalOnMissingBean(MqttPublisher.class)
-    public MqttPublisher mqttPublisher() {
-        return new MqttPublisher();
+    public MqttPublisher mqttPublisher(MqttConnector connector) {
+        return new MqttPublisher(connector);
     }
 
     /**

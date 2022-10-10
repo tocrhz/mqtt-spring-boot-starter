@@ -39,7 +39,6 @@ public class MqttSubscriber {
     private Object bean;
     private Method method;
     private LinkedList<ParameterModel> parameters;
-    private int order;
 
     private final LinkedList<TopicPair> topics = new LinkedList<>();
 
@@ -52,10 +51,6 @@ public class MqttSubscriber {
         subscriber.parameters.stream()
                 .filter(model -> model.getName() != null)
                 .forEach(model -> paramTypeMap.put(model.getName(), model.getType()));
-        if (method.isAnnotationPresent(Order.class)) {
-            Order order = method.getAnnotation(Order.class);
-            subscriber.order = order.value();
-        }
         MqttSubscribe subscribe = method.getAnnotation(MqttSubscribe.class);
         subscriber.clientIds = subscribe.clients();
         subscriber.setTopics(subscribe, paramTypeMap);
@@ -174,9 +169,6 @@ public class MqttSubscriber {
         }
     }
 
-    public int getOrder() {
-        return order;
-    }
 
     public LinkedList<TopicPair> getTopics() {
         return topics;
@@ -192,6 +184,38 @@ public class MqttSubscriber {
             }
         }
         return false;
+    }
+
+    public String[] getClientIds() {
+        return clientIds;
+    }
+
+    public void setClientIds(String[] clientIds) {
+        this.clientIds = clientIds;
+    }
+
+    public Object getBean() {
+        return bean;
+    }
+
+    public void setBean(Object bean) {
+        this.bean = bean;
+    }
+
+    public Method getMethod() {
+        return method;
+    }
+
+    public void setMethod(Method method) {
+        this.method = method;
+    }
+
+    public LinkedList<ParameterModel> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(LinkedList<ParameterModel> parameters) {
+        this.parameters = parameters;
     }
 
     @Override
