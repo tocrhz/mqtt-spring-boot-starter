@@ -120,7 +120,7 @@ public class MqttProperties extends ConnectionProperties {
         MqttConnectOptions options = new MqttConnectOptions();
         options.setMaxReconnectDelay(properties.getMaxReconnectDelay() * 1000);
         options.setKeepAliveInterval(properties.getKeepAliveInterval());
-        options.setConnectionTimeout(properties.getKeepAliveInterval());
+        options.setConnectionTimeout(properties.getConnectionTimeout()); // fixed day 20221022
         options.setCleanSession(properties.getCleanSession());
         options.setAutomaticReconnect(properties.getAutomaticReconnect());
         options.setExecutorServiceTimeout(properties.getExecutorServiceTimeout());
