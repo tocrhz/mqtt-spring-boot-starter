@@ -28,7 +28,7 @@ public class MqttAutoConfiguration {
 
     public MqttAutoConfiguration(ListableBeanFactory beanFactory) {
         // register converters
-        MqttConversionService.addBeans(MqttConversionService.getSharedInstance(), beanFactory);
+        MqttConversionService.addBeans(beanFactory);
     }
 
 

@@ -7,10 +7,10 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.util.VersionUtil;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.github.tocrhz.mqtt.convert.PayloadDeserialize;
-import com.github.tocrhz.mqtt.convert.PayloadSerialize;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.github.tocrhz.mqtt.convert.jackson.JacksonPayloadDeserialize;
+import com.github.tocrhz.mqtt.convert.jackson.JacksonPayloadSerialize;
+import com.github.tocrhz.mqtt.convert.jackson.JacksonStringDeserialize;
+import com.github.tocrhz.mqtt.convert.jackson.JacksonStringSerialize;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -18,11 +18,9 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -40,7 +38,6 @@ import java.util.Date;
 @ConditionalOnClass(ObjectMapper.class)
 @Configuration
 public class PayloadJacksonAutoConfiguration {
-    private final static Logger log = LoggerFactory.getLogger(PayloadJacksonAutoConfiguration.class);
 
     @Bean
     @Order(1001)
@@ -55,43 +52,30 @@ public class PayloadJacksonAutoConfiguration {
 
     @Bean
     @Order(1002)
-    @ConditionalOnMissingBean(PayloadSerialize.class)
-    public PayloadSerialize payloadSerialize(ObjectMapper objectMapper) {
-        return source -> {
-            try {
-                return objectMapper.writeValueAsBytes(source);
-            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-                log.warn("Payload serialize error: {}", e.getMessage(), e);
-            }
-            return null;
-        };
+    public JacksonPayloadSerialize jacksonPayloadSerialize(ObjectMapper objectMapper) {
+        return new JacksonPayloadSerialize(objectMapper);
     }
 
     @Bean
     @Order(1002)
-    @ConditionalOnMissingBean(PayloadDeserialize.class)
-    public PayloadDeserialize payloadDeserialize(ObjectMapper objectMapper) {
-        return new PayloadDeserialize() {
-            @Override
-            @SuppressWarnings("unchecked")
-            public <T> Converter<byte[], T> getConverter(Class<T> targetType) {
-                return source -> {
-                    try {
-                        if (targetType == String.class) {
-                            return (T) new String(source, StandardCharsets.UTF_8);
-                        }
-                        return objectMapper.readValue(source, targetType);
-                    } catch (IOException e) {
-                        log.warn("Payload deserialize error: {}", e.getMessage(), e);
-                    }
-                    return null;
-                };
-            }
-        };
+    public JacksonPayloadDeserialize jacksonPayloadDeserialize(ObjectMapper objectMapper) {
+        return new JacksonPayloadDeserialize(objectMapper);
+    }
+
+    @Bean
+    @Order(1002)
+    public JacksonStringSerialize jacksonStringSerialize(ObjectMapper objectMapper) {
+        return new JacksonStringSerialize(objectMapper);
+    }
+
+    @Bean
+    @Order(1002)
+    public JacksonStringDeserialize jacksonStringDeserialize(ObjectMapper objectMapper) {
+        return new JacksonStringDeserialize(objectMapper);
     }
 
     public static class MqttDefaultJacksonModule extends SimpleModule {
-        public static final Version VERSION = VersionUtil.parseVersion("1.2.7",
+        public static final Version VERSION = VersionUtil.parseVersion("1.2.8",
                 "com.github.tocrhz",
                 "mqtt-spring-boot-starter");
 
