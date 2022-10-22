@@ -40,6 +40,8 @@ public abstract class MqttConfigurer {
      *
      * @param clientId 客户端ID
      * @param options  MqttConnectOptions
+     * @return IMqttAsyncClient
+     * @throws MqttException 创建客户端异常
      */
     public IMqttAsyncClient postCreate(String clientId, MqttConnectOptions options) throws MqttException {
         return new MqttAsyncClient(options.getServerURIs()[0], clientId, new MemoryPersistence());
@@ -130,6 +132,8 @@ public abstract class MqttConfigurer {
 
         /**
          * 设置默认.
+         * @param properties 配置参数
+         * @return ClientRegistry
          */
         public ClientRegistry setDefault(ConnectionProperties properties) {
             mqttProperties.setClientId(properties.getClientId());

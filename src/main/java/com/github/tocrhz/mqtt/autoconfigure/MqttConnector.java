@@ -186,6 +186,7 @@ public class MqttConnector implements DisposableBean {
 
     /**
      * 关闭指定的客户端.
+     * @param clientId 客户端ID.
      */
     public void disconnect(String clientId) {
         Assert.notNull(clientId, "disconnect client id can not be null.");

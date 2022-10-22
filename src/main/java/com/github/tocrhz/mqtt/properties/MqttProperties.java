@@ -69,10 +69,10 @@ public class MqttProperties extends ConnectionProperties {
             for (String clientId : clientIds) {
                 ConnectionProperties properties = clients.get(clientId);
                 String localClientId = properties.getClientId();
-                if (StringUtils.hasText(localClientId) && !localClientId.equals(clientId)){
+                if (StringUtils.hasText(localClientId) && !localClientId.equals(clientId)) {
                     clients.remove(clientId);
                     clients.put(localClientId, properties);
-                }else {
+                } else {
                     properties.setClientId(clientId);
                 }
             }
@@ -101,6 +101,7 @@ public class MqttProperties extends ConnectionProperties {
     /**
      * 转为 MqttConnectOptions
      *
+     * @param clientId 客户端ID.
      * @return MqttConnectOptions对象
      */
     public MqttConnectOptions toOptions(String clientId) {
