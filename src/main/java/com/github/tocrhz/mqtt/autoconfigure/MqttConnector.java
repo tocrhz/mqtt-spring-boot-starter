@@ -214,7 +214,7 @@ public class MqttConnector implements DisposableBean {
             Set<TopicPair> topicPairs = mergeTopics(clientId, sharedEnable);
             this.adapter.beforeSubscribe(clientId, topicPairs);
             if (topicPairs.isEmpty()) {
-                log.warn("There is no topic has been found for client '{}'.", clientId);
+                log.info("There is no topic has been found for client '{}'.", clientId);
                 return;
             }
             StringJoiner sj = new StringJoiner(",");

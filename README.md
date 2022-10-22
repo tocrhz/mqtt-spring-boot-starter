@@ -8,21 +8,15 @@ MQTT starter for Spring Boot, easier to use.
 
 ## 0. 修改记录
 
+2022-02-22 `v1.2.8`
+1. 修复对象与字节转换的bug, 优先使用自定义的转换类，如果无法转换，再使用Spring的转换类
+2. 新增内置String与对象互转的转换类，使用Jackson, 内置转换类不再使用匿名类
+3. 修复一个配置的bug
+
 2022-02-22 `v1.2.7`
 1. 配置调整, `mqtt.clients` 中明确配置的 `client-id` 优先级更高
 
-2021-11-16 `v1.2.6`
-1. 去掉默认的异常处理. 
-
-2021-11-09 
-1. 已知bug: ClientRegistry.setDefault 不生效. 
-
-2021-11-08 
-1. 新版本 `v1.2.5`
-
-2021-11-05  
-1. 增加一个配置抽象类, 删除几个配置用的接口(实现挪到抽象类里)  
-2. 去除@NonNull的使用(该注解springboot1.x中不存在)  
+...
 
 ## 1. import
 
@@ -30,7 +24,7 @@ MQTT starter for Spring Boot, easier to use.
 <dependency>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>1.2.6</version>
+    <version>1.2.8</version>
 </dependency>
 ```
 
@@ -148,47 +142,55 @@ public class DemoService {
 
 #### payload serialize or deserialize
 
-Implements `PayloadSerialize` and `PayloadDeserialize`,
-or implements `ConverterFactory<byte[], Object>` and `Converter<Object, byte[]>` is the same.
+Implements `PayloadSerialize` and `PayloadDeserialize`, or implements `ConverterFactory` and `Converter` is the same.
 
-e.g.
 
 ```java
 
-@Slf4j
-@Configuration
-public class MqttPayloadConfig {
+@Component
+public class JacksonPayloadSerialize implements PayloadSerialize {
+    private final static Logger log = LoggerFactory.getLogger(JacksonPayloadDeserialize.class);
 
-    @Bean
-    public PayloadSerialize payloadSerialize(ObjectMapper objectMapper) {
-        return source -> {
-            try {
-                return objectMapper.writeValueAsBytes(source);
-            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-                log.warn("Payload serialize error: {}", e.getMessage(), e);
-            }
-            return null;
-        };
+    private final ObjectMapper objectMapper;
+
+    public JacksonPayloadSerialize(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
     }
 
-    @Bean
-    public PayloadDeserialize payloadDeserialize(ObjectMapper objectMapper) {
-        return new PayloadDeserialize() {
-            @Override
-            @SuppressWarnings("unchecked")
-            public <T> Converter<byte[], T> getConverter(Class<T> targetType) {
-                return source -> {
-                    try {
-                        if (targetType == String.class) {
-                            return (T) new String(source, StandardCharsets.UTF_8);
-                        }
-                        return objectMapper.readValue(source, targetType);
-                    } catch (IOException e) {
-                        log.warn("Payload deserialize error: {}", e.getMessage(), e);
-                    }
-                    return null;
-                };
+    @Override
+    public byte[] convert(Object source) {
+        try {
+            return objectMapper.writeValueAsBytes(source);
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            log.warn("Payload serialize error: {}", e.getMessage(), e);
+        }
+        return null;
+    }
+}
+
+@Component
+public class JacksonPayloadDeserialize implements PayloadDeserialize {
+    private final static Logger log = LoggerFactory.getLogger(JacksonPayloadDeserialize.class);
+
+    private final ObjectMapper objectMapper;
+
+    public JacksonPayloadDeserialize(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> Converter<byte[], T> getConverter(Class<T> targetType) {
+        return source -> {
+            try {
+                if (targetType == String.class) {
+                    return (T) new String(source, StandardCharsets.UTF_8);
+                }
+                return objectMapper.readValue(source, targetType);
+            } catch (IOException e) {
+                log.warn("Payload deserialize error: {}", e.getMessage(), e);
             }
+            return null;
         };
     }
 }
@@ -197,8 +199,6 @@ public class MqttPayloadConfig {
 #### 配置
 
 通过 `MqttConfigurer` 抽象类, 可以在创建客户端前, 连接前, 订阅前自定义操作.
-
-e.g.
 
 ```java
 @Component
