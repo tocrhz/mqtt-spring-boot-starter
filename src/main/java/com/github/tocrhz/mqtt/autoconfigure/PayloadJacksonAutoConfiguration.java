@@ -7,15 +7,16 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.util.VersionUtil;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.github.tocrhz.mqtt.convert.PayloadDeserialize;
+import com.github.tocrhz.mqtt.convert.PayloadSerialize;
 import com.github.tocrhz.mqtt.convert.jackson.JacksonPayloadDeserialize;
 import com.github.tocrhz.mqtt.convert.jackson.JacksonPayloadSerialize;
 import com.github.tocrhz.mqtt.convert.jackson.JacksonStringDeserialize;
 import com.github.tocrhz.mqtt.convert.jackson.JacksonStringSerialize;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.util.StringUtils;
@@ -27,49 +28,62 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * default mqtt payload config for jackson.
  *
  * @author tocrhz
  */
-@Order(1001)
+@Order
 @AutoConfigureAfter({JacksonAutoConfiguration.class})
 @ConditionalOnClass(ObjectMapper.class)
 @Configuration
 public class PayloadJacksonAutoConfiguration {
 
-    @Bean
-    @Order(1001)
-    @ConditionalOnMissingBean(ObjectMapper.class)
+    public PayloadJacksonAutoConfiguration(ListableBeanFactory beanFactory){
+        MqttConversionService registry = MqttConversionService.getSharedInstance();
+
+        ObjectMapper objectMapper = objectMapper();
+        // 默认转换类
+        Map<String, PayloadDeserialize> deserializeMap = beanFactory.getBeansOfType(PayloadDeserialize.class);
+        if (deserializeMap.isEmpty()){
+            registry.addConverterFactory(jacksonPayloadDeserialize(objectMapper));
+            registry.addConverterFactory(jacksonStringDeserialize(objectMapper));
+        }else {
+            deserializeMap.values().forEach(registry::addConverterFactory);
+        }
+        Map<String, PayloadSerialize> serializeMap = beanFactory.getBeansOfType(PayloadSerialize.class);
+        if (serializeMap.isEmpty()){
+            registry.addConverter(jacksonPayloadSerialize(objectMapper));
+            registry.addConverter(jacksonStringSerialize(objectMapper));
+        }else {
+            serializeMap.values().forEach(registry::addConverter);
+        }
+    }
+
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        objectMapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
         objectMapper.registerModule(new MqttDefaultJacksonModule());
         return objectMapper;
     }
 
-    @Bean
-    @Order(1002)
     public JacksonPayloadSerialize jacksonPayloadSerialize(ObjectMapper objectMapper) {
         return new JacksonPayloadSerialize(objectMapper);
     }
 
-    @Bean
-    @Order(1002)
     public JacksonPayloadDeserialize jacksonPayloadDeserialize(ObjectMapper objectMapper) {
         return new JacksonPayloadDeserialize(objectMapper);
     }
 
-    @Bean
-    @Order(1002)
     public JacksonStringSerialize jacksonStringSerialize(ObjectMapper objectMapper) {
         return new JacksonStringSerialize(objectMapper);
     }
 
-    @Bean
-    @Order(1002)
     public JacksonStringDeserialize jacksonStringDeserialize(ObjectMapper objectMapper) {
         return new JacksonStringDeserialize(objectMapper);
     }

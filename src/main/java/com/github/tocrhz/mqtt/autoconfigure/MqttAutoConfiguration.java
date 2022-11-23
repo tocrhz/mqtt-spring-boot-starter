@@ -18,7 +18,7 @@ import org.springframework.core.annotation.Order;
  *
  * @author tocrhz
  */
-@Order(1010)
+@Order
 @AutoConfigureAfter(PayloadJacksonAutoConfiguration.class)
 @ConditionalOnClass(MqttAsyncClient.class)
 @ConditionalOnProperty(prefix = "mqtt", name = "disable", havingValue = "false", matchIfMissing = true)

@@ -7,6 +7,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * 默认的json字符串转对象配置
@@ -25,7 +26,9 @@ public class JacksonStringDeserialize implements ConverterFactory<String, Object
     public <T> Converter<String, T> getConverter(Class<T> targetType) {
         return source -> {
             try {
-                if (targetType == String.class) {
+                if (targetType == byte[].class) {
+                    return (T) source.getBytes(StandardCharsets.UTF_8);
+                }else if (targetType == String.class) {
                     return (T) source;
                 }
                 return objectMapper.readValue(source, targetType);

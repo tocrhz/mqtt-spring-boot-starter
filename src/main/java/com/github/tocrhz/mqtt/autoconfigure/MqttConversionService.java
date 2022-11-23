@@ -1,6 +1,5 @@
 package com.github.tocrhz.mqtt.autoconfigure;
 
-import com.github.tocrhz.mqtt.convert.*;
 import com.github.tocrhz.mqtt.convert.other.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,14 +26,13 @@ public class MqttConversionService extends GenericConversionService {
             synchronized (MqttConversionService.class) {
                 if (sharedInstance == null) {
                     sharedInstance = new MqttConversionService();
+                    init(sharedInstance);
                 }
             }
         }
         return sharedInstance;
     }
-
-    public static void addBeans(ListableBeanFactory beanFactory) {
-        MqttConversionService registry = MqttConversionService.getSharedInstance();
+    private static void init(MqttConversionService registry){
         // 其他默认
         registry.addConverter((StringToByteArrayConverter) source -> source.getBytes(StandardCharsets.UTF_8));
         registry.addConverter((ByteArrayToStringConverter) source -> new String(source, StandardCharsets.UTF_8));
@@ -45,9 +43,10 @@ public class MqttConversionService extends GenericConversionService {
         registry.addConverter((ByteArrayToLongConverter) source -> Long.parseLong(new String(source, StandardCharsets.UTF_8)));
         registry.addConverter((ByteArrayToFloatConverter) source -> Float.parseFloat(new String(source, StandardCharsets.UTF_8)));
         registry.addConverter((ByteArrayToDoubleConverter) source -> Double.parseDouble(new String(source, StandardCharsets.UTF_8)));
-        // 默认转换类
-        beanFactory.getBeansOfType(PayloadDeserialize.class).values().forEach(registry::addConverterFactory);
-        beanFactory.getBeansOfType(PayloadSerialize.class).values().forEach(registry::addConverter);
+    }
+
+    public static void addBeans(ListableBeanFactory beanFactory) {
+        MqttConversionService registry = MqttConversionService.getSharedInstance();
         // 其他转换类
         beanFactory.getBeansOfType(ConverterFactory.class).values().forEach(registry::addConverterFactory);
         beanFactory.getBeansOfType(Converter.class).values().forEach(registry::addConverter);

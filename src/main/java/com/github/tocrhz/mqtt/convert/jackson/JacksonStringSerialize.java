@@ -20,6 +20,9 @@ public class JacksonStringSerialize implements Converter<Object, String> {
     @Override
     public String convert(Object source) {
         try {
+            if (source instanceof String) {
+                return (String) source;
+            }
             return objectMapper.writeValueAsString(source);
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             log.warn("Payload serialize error: {}", e.getMessage(), e);

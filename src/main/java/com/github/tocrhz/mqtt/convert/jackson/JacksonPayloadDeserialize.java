@@ -26,7 +26,9 @@ public class JacksonPayloadDeserialize implements PayloadDeserialize {
     public <T> Converter<byte[], T> getConverter(Class<T> targetType) {
         return source -> {
             try {
-                if (targetType == String.class) {
+                if (targetType == byte[].class) {
+                    return (T) source;
+                }else if (targetType == String.class) {
                     return (T) new String(source, StandardCharsets.UTF_8);
                 }
                 return objectMapper.readValue(source, targetType);
