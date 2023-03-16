@@ -167,8 +167,10 @@ public class MqttSubscriber {
                 value = mqttMessage;
             } else if (parameter.isSign() && mqttMessage != null) {
                 value = MqttConversionService.getSharedInstance().fromBytes(mqttMessage.getPayload(), target, converters);
-            } else if (name != null && pathValueMap.containsKey(name)) {
-                value = fromTopic(pathValueMap.get(name), target);
+            } else if (name != null) {
+                if (pathValueMap.containsKey(name)){
+                    value = fromTopic(pathValueMap.get(name), target);
+                }
             } else if (target == String.class) {
                 value = topic;
             } else if (target.getClassLoader() != null && mqttMessage != null) {
