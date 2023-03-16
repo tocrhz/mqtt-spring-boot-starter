@@ -2,6 +2,7 @@ package com.github.tocrhz.mqtt.autoconfigure;
 
 import com.github.tocrhz.mqtt.annotation.MqttSubscribe;
 import com.github.tocrhz.mqtt.subscriber.MqttSubscriber;
+import com.github.tocrhz.mqtt.subscriber.SubscriberModel;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -32,7 +33,8 @@ public class MqttSubscribeProcessor implements BeanPostProcessor {
             Method[] methods = bean.getClass().getMethods();
             for (Method method : methods) {
                 if (method.isAnnotationPresent(MqttSubscribe.class)) {
-                    SUBSCRIBERS.add(MqttSubscriber.of(bean, method));
+                    SubscriberModel model = SubscriberModel.of(method.getAnnotation(MqttSubscribe.class));
+                    SUBSCRIBERS.add(MqttSubscriber.of(model, bean, method));
                 }
             }
         }

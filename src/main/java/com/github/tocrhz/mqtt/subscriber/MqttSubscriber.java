@@ -1,6 +1,5 @@
 package com.github.tocrhz.mqtt.subscriber;
 
-import com.github.tocrhz.mqtt.annotation.MqttSubscribe;
 import com.github.tocrhz.mqtt.autoconfigure.MqttConversionService;
 import com.github.tocrhz.mqtt.exception.NullParameterException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -12,6 +11,7 @@ import org.springframework.core.convert.converter.Converter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Used to subscribe message
@@ -35,6 +35,7 @@ public class MqttSubscriber {
         }
     }
 
+    private SubscriberModel subscribe;
     private String[] clientIds;
     private Object bean;
     private Method method;
@@ -43,27 +44,47 @@ public class MqttSubscriber {
 
     private final LinkedList<TopicPair> topics = new LinkedList<>();
 
-    public static MqttSubscriber of(Object bean, Method method) {
+    private boolean hasResolveEmbeddedValue;
+
+    public void afterInit(Function<String, String> function) {
+        if (hasResolveEmbeddedValue) {
+            return;
+        }
+        hasResolveEmbeddedValue = true;
+        if (function != null) {
+            String[] clients = subscribe.clients();
+            for (int i = 0; i < clients.length; i++) {
+                clients[i] = function.apply(clients[i]);
+            }
+            String[] value = subscribe.value();
+            for (int i = 0; i < value.length; i++) {
+                value[i] = function.apply(value[i]);
+            }
+        }
+
+        HashMap<String, Class<?>> paramTypeMap = new HashMap<>();
+        this.parameters.stream()
+                .filter(param -> param.getName() != null)
+                .forEach(param -> paramTypeMap.put(param.getName(), param.getType()));
+        this.clientIds = subscribe.clients();
+        this.setTopics(subscribe, paramTypeMap);
+    }
+
+    public static MqttSubscriber of(SubscriberModel subscribe, Object bean, Method method) {
         MqttSubscriber subscriber = new MqttSubscriber();
         subscriber.bean = bean;
         subscriber.method = method;
+        subscriber.subscribe = subscribe;
         subscriber.parameters = ParameterModel.of(method);
-        HashMap<String, Class<?>> paramTypeMap = new HashMap<>();
-        subscriber.parameters.stream()
-                .filter(model -> model.getName() != null)
-                .forEach(model -> paramTypeMap.put(model.getName(), model.getType()));
         if (method.isAnnotationPresent(Order.class)) {
             Order order = method.getAnnotation(Order.class);
             subscriber.order = order.value();
         }
-        MqttSubscribe subscribe = method.getAnnotation(MqttSubscribe.class);
-        subscriber.clientIds = subscribe.clients();
-        subscriber.setTopics(subscribe, paramTypeMap);
         return subscriber;
     }
 
 
-    private void setTopics(MqttSubscribe subscribe, HashMap<String, Class<?>> paramTypeMap) {
+    private void setTopics(SubscriberModel subscribe, HashMap<String, Class<?>> paramTypeMap) {
         String[] topics = subscribe.value();
         int[] qos = fillQos(topics, subscribe.qos());
         boolean[] shared = fillShared(topics, subscribe.shared());

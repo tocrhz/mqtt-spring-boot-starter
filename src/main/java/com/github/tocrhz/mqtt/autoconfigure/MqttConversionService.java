@@ -32,7 +32,8 @@ public class MqttConversionService extends GenericConversionService {
         }
         return sharedInstance;
     }
-    private static void init(MqttConversionService registry){
+
+    private static void init(MqttConversionService registry) {
         // 其他默认
         registry.addConverter((StringToByteArrayConverter) source -> source.getBytes(StandardCharsets.UTF_8));
         registry.addConverter((ByteArrayToStringConverter) source -> new String(source, StandardCharsets.UTF_8));

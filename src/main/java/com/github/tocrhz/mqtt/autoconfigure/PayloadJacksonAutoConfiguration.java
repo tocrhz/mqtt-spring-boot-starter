@@ -41,23 +41,23 @@ import java.util.Map;
 @Configuration
 public class PayloadJacksonAutoConfiguration {
 
-    public PayloadJacksonAutoConfiguration(ListableBeanFactory beanFactory){
+    public PayloadJacksonAutoConfiguration(ListableBeanFactory beanFactory) {
         MqttConversionService registry = MqttConversionService.getSharedInstance();
 
         ObjectMapper objectMapper = objectMapper();
         // 默认转换类
         Map<String, PayloadDeserialize> deserializeMap = beanFactory.getBeansOfType(PayloadDeserialize.class);
-        if (deserializeMap.isEmpty()){
+        if (deserializeMap.isEmpty()) {
             registry.addConverterFactory(jacksonPayloadDeserialize(objectMapper));
             registry.addConverterFactory(jacksonStringDeserialize(objectMapper));
-        }else {
+        } else {
             deserializeMap.values().forEach(registry::addConverterFactory);
         }
         Map<String, PayloadSerialize> serializeMap = beanFactory.getBeansOfType(PayloadSerialize.class);
-        if (serializeMap.isEmpty()){
+        if (serializeMap.isEmpty()) {
             registry.addConverter(jacksonPayloadSerialize(objectMapper));
             registry.addConverter(jacksonStringSerialize(objectMapper));
-        }else {
+        } else {
             serializeMap.values().forEach(registry::addConverter);
         }
     }

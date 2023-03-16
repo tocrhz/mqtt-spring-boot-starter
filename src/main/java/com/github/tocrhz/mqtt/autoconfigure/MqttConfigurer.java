@@ -2,6 +2,7 @@ package com.github.tocrhz.mqtt.autoconfigure;
 
 import com.github.tocrhz.mqtt.properties.ConnectionProperties;
 import com.github.tocrhz.mqtt.properties.MqttProperties;
+import com.github.tocrhz.mqtt.subscriber.MqttSubscriber;
 import com.github.tocrhz.mqtt.subscriber.TopicPair;
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
@@ -10,6 +11,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.springframework.util.Assert;
 
+import java.util.LinkedList;
 import java.util.Set;
 
 /**
@@ -18,11 +20,22 @@ import java.util.Set;
 public abstract class MqttConfigurer {
     protected MqttProperties mqttProperties;
 
-
     public final void setProperties(MqttProperties mqttProperties) {
         this.mqttProperties = mqttProperties;
         ClientRegistry clientRegistry = new ClientRegistry();
         beforeCreate(clientRegistry);
+    }
+
+    /**
+     * 在处理注解内参数之前.
+     */
+    public void beforeResolveEmbeddedValue(LinkedList<MqttSubscriber> subscribers) {
+    }
+
+    /**
+     * 在处理注解内参数之后.
+     */
+    public void afterResolveEmbeddedValue(LinkedList<MqttSubscriber> subscribers) {
     }
 
     /**
@@ -132,6 +145,7 @@ public abstract class MqttConfigurer {
 
         /**
          * 设置默认.
+         *
          * @param properties 配置参数
          * @return ClientRegistry
          */

@@ -8,6 +8,10 @@ MQTT starter for Spring Boot, easier to use.
 
 ## 0. 修改记录
 
+2023-03-16 `v1.3.0`
+1. `@MqttSubscribe` 注解添加嵌入参数支持（只有topic和client生效，详见`MqttSubscriber#afterInit`） #14, #15
+
+
 2022-11-23 `v1.2.8.1`
 1. fix bug #19
 
@@ -70,6 +74,19 @@ public class MqttMessageHandler {
      * topic = test/+
      */
     @MqttSubscribe("test/+")
+    public void sub(String topic, MqttMessage message, @Payload String payload) {
+        logger.info("receive from    : {}", topic);
+        logger.info("message payload : {}", new String(message.getPayload(), StandardCharsets.UTF_8));
+        logger.info("string payload  : {}", payload);
+    }
+
+    /**
+     * With Embedded Value.
+     * topic = 
+     *    default_client
+     *    test/default_client/+
+     */
+    @MqttSubscribe({"${mqtt.client-id:abc}", "test/${mqtt.client-id:abc}/+"})
     public void sub(String topic, MqttMessage message, @Payload String payload) {
         logger.info("receive from    : {}", topic);
         logger.info("message payload : {}", new String(message.getPayload(), StandardCharsets.UTF_8));
@@ -201,9 +218,28 @@ public class JacksonPayloadDeserialize implements PayloadDeserialize {
 通过 `MqttConfigurer` 抽象类, 可以在创建客户端前, 连接前, 订阅前自定义操作.
 
 ```java
+import com.github.tocrhz.mqtt.subscriber.MqttSubscriber;
+import com.github.tocrhz.mqtt.subscriber.SubscriberModel;
+
+import java.lang.reflect.Method;
+
 @Component
-public class MyMqttConfigurer extends MqttConfigurer { 
-    
+public class MyMqttConfigurer extends MqttConfigurer {
+
+    /**
+     * 在处理嵌入参数之前
+     */
+    public void afterResolveEmbeddedValue(LinkedList<MqttSubscriber> subscribers) {
+
+        // 添加一个自定义的订阅.
+        SubscriberModel model = new SubscriberModel(new String[]{"/test/abc"}, new int[]{0}, null, null, null);
+        Object obj = new Object();
+        Method toString = obj.getClass().getMethod("toString");
+        MqttSubscriber subscriber = MqttSubscriber.of(model, obj, toString);
+        // 若在处理嵌入参数之后，则需要手动调用 subscriber.afterInit(null);
+        subscribers.add(subscriber);
+    }
+
     /**
      * 在创建客户端之前, 增删改客户端配置.
      * <p>清除的原有客户端, 增加客户端 "client01" </p>
@@ -227,10 +263,10 @@ public class MyMqttConfigurer extends MqttConfigurer {
     /**
      * 在创建客户端后, 订阅主题前, 修改订阅的主题.
      * <p>清除 client01 的原有订阅, 增加订阅 "/test/abc"</p>
-     * 
+     *
      */
     public void beforeSubscribe(String clientId, Set<TopicPair> topicPairs) {
-        if("client01".equals(clientId)){
+        if ("client01".equals(clientId)) {
             topicPairs.clear();
             topicPairs.add(TopicPair.of("/test/abc", 0));
         }
