@@ -2,14 +2,14 @@
 
 MQTT starter for Spring Boot, easier to use.
 
-> Support spring boot version: 2.x
+> Support spring boot version: 3.x
 >
 > This document is machine translated.
 
 ## 0. 修改记录
 
-2023-11-06 `v1.4.0`
-1. 重构一下, 发送部分改了, 发送部分不兼容以前的版本了
+2023-11-06 `v2.0.0`
+1. 改了spring版本3.x, 重构了一下, 发送部分改了, 发送部分不兼容以前的版本了
 
 
 2023-03-16 `v1.3.0`
@@ -32,7 +32,7 @@ MQTT starter for Spring Boot, easier to use.
 <dependency>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>1.4.0</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
