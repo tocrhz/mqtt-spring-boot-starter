@@ -8,6 +8,10 @@ MQTT starter for Spring Boot, easier to use.
 
 ## 0. 修改记录
 
+2023-11-06 `v1.4.0`
+1. 重构一下, 发送部分改了, 发送部分不兼容以前的版本了
+
+
 2023-03-16 `v1.3.0`
 1. `@MqttSubscribe` 注解添加嵌入参数支持（只有topic和client生效，详见`MqttSubscriber#afterInit`） #14, #15
 

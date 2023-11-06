@@ -90,7 +90,7 @@ public class PayloadJacksonAutoConfiguration {
     }
 
     public static class MqttDefaultJacksonModule extends SimpleModule {
-        public static final Version VERSION = VersionUtil.parseVersion("1.3.1",
+        public static final Version VERSION = VersionUtil.parseVersion("1.4.0",
                 "com.github.tocrhz",
                 "mqtt-spring-boot-starter");
 
