@@ -177,32 +177,6 @@ public class JacksonPayloadSerialize implements PayloadSerialize {
     }
 }
 
-@Component
-public class JacksonPayloadDeserialize implements PayloadDeserialize {
-    private final static Logger log = LoggerFactory.getLogger(JacksonPayloadDeserialize.class);
-
-    private final ObjectMapper objectMapper;
-
-    public JacksonPayloadDeserialize(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
-
-    @Override
-    @SuppressWarnings({"unchecked"})
-    public <T> Converter<byte[], T> getConverter(Class<T> targetType) {
-        return source -> {
-            try {
-                if (targetType == String.class) {
-                    return (T) new String(source, StandardCharsets.UTF_8);
-                }
-                return objectMapper.readValue(source, targetType);
-            } catch (IOException e) {
-                log.warn("Payload deserialize error: {}", e.getMessage(), e);
-            }
-            return null;
-        };
-    }
-}
 ```
 
 #### 配置
