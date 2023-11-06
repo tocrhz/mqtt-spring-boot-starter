@@ -1,0 +1,3 @@
+com.github.tocrhz.mqtt.autoconfigure.MqttSubscribeProcessor
+com.github.tocrhz.mqtt.autoconfigure.PayloadJacksonAutoConfiguration
+com.github.tocrhz.mqtt.autoconfigure.MqttAutoConfiguration

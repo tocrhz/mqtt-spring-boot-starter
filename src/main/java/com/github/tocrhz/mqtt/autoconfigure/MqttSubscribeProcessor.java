@@ -4,12 +4,11 @@ import com.github.tocrhz.mqtt.annotation.MqttSubscribe;
 import com.github.tocrhz.mqtt.subscriber.MqttSubscriber;
 import com.github.tocrhz.mqtt.subscriber.SubscriberModel;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
-import java.util.LinkedList;
 
 /**
  * When Bean is initialized, filter out the methods annotated with @MqttSubscribe, and create MqttSubscriber
@@ -19,23 +18,16 @@ import java.util.LinkedList;
  * @see MqttSubscriber
  */
 @Component
+@ConditionalOnProperty(prefix = "mqtt", name = "disable", havingValue = "false", matchIfMissing = true)
 public class MqttSubscribeProcessor implements BeanPostProcessor {
-
-    // subscriber cache
-    static final LinkedList<MqttSubscriber> SUBSCRIBERS = new LinkedList<>();
-
-    @Value("${mqtt.disable:false}")
-    private Boolean disable;
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if (disable == null || !disable) {
-            Method[] methods = bean.getClass().getMethods();
-            for (Method method : methods) {
-                if (method.isAnnotationPresent(MqttSubscribe.class)) {
-                    SubscriberModel model = SubscriberModel.of(method.getAnnotation(MqttSubscribe.class));
-                    SUBSCRIBERS.add(MqttSubscriber.of(model, bean, method));
-                }
+        Method[] methods = bean.getClass().getMethods();
+        for (Method method : methods) {
+            if (method.isAnnotationPresent(MqttSubscribe.class)) {
+                SubscriberModel model = SubscriberModel.of(method.getAnnotation(MqttSubscribe.class));
+                MqttSubscriber.SUBSCRIBERS.add(MqttSubscriber.of(model, bean, method));
             }
         }
         return bean;

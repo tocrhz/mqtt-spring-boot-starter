@@ -13,10 +13,11 @@ import java.util.LinkedList;
 /**
  * @author tocrhz
  */
-final class ParameterModel {
+public final class ParameterModel {
     private final static Logger log = LoggerFactory.getLogger(ParameterModel.class);
 
-    private boolean sign; // 标记为消息内容, 若参数为String类型, 并且无标记, 则赋值topic.
+    // 是否是消息内容, 若参数为String类型, 并且不是消息内容, 则赋值 topic.
+    private boolean payload;
     private boolean required;
     private Class<?> type;
     private String name;
@@ -36,7 +37,7 @@ final class ParameterModel {
             model.type = parameterTypes[i];
             model.defaultValue = defaultValue(model.type);
             Annotation[] annotations = parameterAnnotations[i];
-            if (annotations != null && annotations.length > 0) {
+            if (annotations != null) {
                 for (Annotation annotation : annotations) {
                     if (annotation.annotationType() == NamedValue.class) {
                         NamedValue namedValue = (NamedValue) annotation;
@@ -45,13 +46,10 @@ final class ParameterModel {
                     }
                     if (annotation.annotationType() == Payload.class) {
                         Payload payload = (Payload) annotation;
-                        model.sign = true;
+                        model.payload = true;
                         model.required = model.required || payload.required();
                         model.converters = toConverters(payload.value());
                     }
-//                    if (annotation.annotationType() == NonNull.class) {
-//                        model.required = true;
-//                    }
                 }
             }
         }
@@ -75,8 +73,8 @@ final class ParameterModel {
         }
     }
 
-    public boolean isSign() {
-        return sign;
+    public boolean isPayload() {
+        return payload;
     }
 
     public boolean isRequired() {

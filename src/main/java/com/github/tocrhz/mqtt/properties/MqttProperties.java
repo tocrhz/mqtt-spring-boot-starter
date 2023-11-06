@@ -7,6 +7,7 @@ import org.springframework.util.StringUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
@@ -16,7 +17,7 @@ import java.util.function.BiConsumer;
  * @see MqttConnectOptions
  */
 @ConfigurationProperties(prefix = "mqtt")
-public class MqttProperties extends ConnectionProperties {
+public class MqttProperties extends MqttConnectionProperties {
     /**
      * 是否禁用
      */
@@ -25,7 +26,7 @@ public class MqttProperties extends ConnectionProperties {
     /**
      * 多个客户端配置, key:clientId, value:配置
      */
-    private Map<String, ConnectionProperties> clients = new LinkedHashMap<>();
+    private Map<String, MqttConnectionProperties> clients = new LinkedHashMap<>();
 
     /**
      * 是否禁用
@@ -45,11 +46,11 @@ public class MqttProperties extends ConnectionProperties {
      *
      * @return Map
      */
-    public Map<String, ConnectionProperties> getClients() {
+    public Map<String, MqttConnectionProperties> getClients() {
         return clients;
     }
 
-    public void setClients(Map<String, ConnectionProperties> clients) {
+    public void setClients(Map<String, MqttConnectionProperties> clients) {
         this.clients = clients;
     }
 
@@ -67,7 +68,7 @@ public class MqttProperties extends ConnectionProperties {
             // 先遍历一遍处理下clientId冲突的问题
             String[] clientIds = clients.keySet().toArray(new String[0]);
             for (String clientId : clientIds) {
-                ConnectionProperties properties = clients.get(clientId);
+                MqttConnectionProperties properties = clients.get(clientId);
                 String localClientId = properties.getClientId();
                 if (StringUtils.hasText(localClientId) && !localClientId.equals(clientId)) {
                     clients.remove(clientId);
@@ -105,7 +106,7 @@ public class MqttProperties extends ConnectionProperties {
      * @return MqttConnectOptions对象
      */
     public MqttConnectOptions toOptions(String clientId) {
-        ConnectionProperties properties = clients.get(clientId);
+        MqttConnectionProperties properties = clients.get(clientId);
         if (properties == null) {
             if (clientId.equals(getClientId())) {
                 properties = this;
@@ -117,7 +118,7 @@ public class MqttProperties extends ConnectionProperties {
         return toOptions(properties);
     }
 
-    private MqttConnectOptions toOptions(ConnectionProperties properties) {
+    public MqttConnectOptions toOptions(MqttConnectionProperties properties) {
         MqttConnectOptions options = new MqttConnectOptions();
         options.setMaxReconnectDelay(properties.getMaxReconnectDelay() * 1000);
         options.setKeepAliveInterval(properties.getKeepAliveInterval());
@@ -139,7 +140,7 @@ public class MqttProperties extends ConnectionProperties {
         return options;
     }
 
-    private void merge(ConnectionProperties target) {
+    public void merge(MqttConnectionProperties target) {
         target.setUri(mergeValue(getUri(), target.getUri(), new String[]{"tcp://127.0.0.1:1883"}));
         target.setUsername(mergeValue(getUsername(), target.getUsername(), null));
         target.setPassword(mergeValue(getPassword(), target.getPassword(), null));
@@ -165,18 +166,14 @@ public class MqttProperties extends ConnectionProperties {
     private <T> T mergeValue(T parentValue, T targetValue, T defaultValue) {
         if (parentValue == null && targetValue == null) {
             return defaultValue;
-        } else if (targetValue == null) {
-            return parentValue;
-        } else {
-            return targetValue;
-        }
+        } else return Objects.requireNonNullElse(targetValue, parentValue);
     }
 
-    public boolean isSharedEnable(String clientId) {
+    public boolean isEnableSharedSubscription(String clientId) {
         if (clientId.equals(getClientId())) {
             return getEnableSharedSubscription();
         } else {
-            ConnectionProperties properties = clients.get(clientId);
+            MqttConnectionProperties properties = clients.get(clientId);
             if (properties == null) {
                 return false;
             }
@@ -188,7 +185,7 @@ public class MqttProperties extends ConnectionProperties {
         if (clientId.equals(getClientId())) {
             return getDefaultPublishQos();
         } else {
-            ConnectionProperties properties = clients.get(clientId);
+            MqttConnectionProperties properties = clients.get(clientId);
             if (properties == null) {
                 return 0;
             }

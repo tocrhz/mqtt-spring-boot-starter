@@ -1,17 +1,15 @@
 package com.github.tocrhz.mqtt.subscriber;
 
-import com.github.tocrhz.mqtt.autoconfigure.MqttConversionService;
+import com.github.tocrhz.mqtt.convert.MqttConversionService;
 import com.github.tocrhz.mqtt.exception.NullParameterException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.core.convert.converter.Converter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.Order;
-import org.springframework.core.convert.converter.Converter;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * Used to subscribe message
@@ -20,66 +18,53 @@ import java.util.function.Function;
  */
 public class MqttSubscriber {
     private final static Logger log = LoggerFactory.getLogger(MqttSubscriber.class);
-
+    public static final LinkedList<MqttSubscriber> SUBSCRIBERS = new LinkedList<>();
+    /**
+     * 接收消息并处理
+     *
+     * @param clientId    接收当前消息的客户端ID
+     * @param topic       当前消息的主题
+     * @param mqttMessage 当前消息内容
+     */
     public void accept(String clientId, String topic, MqttMessage mqttMessage) {
         Optional<TopicPair> matched = matched(clientId, topic);
         if (matched.isPresent()) {
             try {
-                method.invoke(bean, fillParameters(matched.get(), topic, mqttMessage));
-            } catch (NullParameterException ignored) {
-                // 如果参数为空则不执行方法
-                log.debug("Fill parameters caught null exception.");
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                log.error("Message handler error: {}", e.getMessage(), e);
+                Object[] parameters = fillParameters(matched.get(), topic, mqttMessage);
+                handler.receive(parameters);
+            } catch (NullParameterException e) {
+                log.debug("message params error: {}", e.getMessage());
+            } catch (Exception e) {
+                log.error("message handler error: {}", e.getMessage(), e);
             }
         }
     }
 
     private SubscriberModel subscribe;
     private String[] clientIds;
-    private Object bean;
-    private Method method;
+    private IMessageHandler handler;
     private LinkedList<ParameterModel> parameters;
-    private int order;
 
     private final LinkedList<TopicPair> topics = new LinkedList<>();
 
-    private boolean hasResolveEmbeddedValue;
-
-    public void afterInit(Function<String, String> function) {
-        if (hasResolveEmbeddedValue) {
-            return;
-        }
-        hasResolveEmbeddedValue = true;
-        if (function != null) {
-            String[] clients = subscribe.clients();
-            for (int i = 0; i < clients.length; i++) {
-                clients[i] = function.apply(clients[i]);
-            }
-            String[] value = subscribe.value();
-            for (int i = 0; i < value.length; i++) {
-                value[i] = function.apply(value[i]);
-            }
-        }
-
-        HashMap<String, Class<?>> paramTypeMap = new HashMap<>();
-        this.parameters.stream()
-                .filter(param -> param.getName() != null)
-                .forEach(param -> paramTypeMap.put(param.getName(), param.getType()));
-        this.clientIds = subscribe.clients();
-        this.setTopics(subscribe, paramTypeMap);
+    public static MqttSubscriber of(SubscriberModel subscribe, Object bean, Method method) {
+        LinkedList<ParameterModel> parameters = ParameterModel.of(method);
+        IMessageHandler handler = (params) -> method.invoke(bean, params);
+        return of(subscribe, parameters, handler);
     }
 
-    public static MqttSubscriber of(SubscriberModel subscribe, Object bean, Method method) {
+    /**
+     * 创建消息处理对象
+     *
+     * @param subscribe  订阅模型
+     * @param parameters 处理方法的参数
+     * @param handler    消息处理方法
+     */
+    public static MqttSubscriber of(SubscriberModel subscribe, LinkedList<ParameterModel> parameters, IMessageHandler handler) {
         MqttSubscriber subscriber = new MqttSubscriber();
-        subscriber.bean = bean;
-        subscriber.method = method;
         subscriber.subscribe = subscribe;
-        subscriber.parameters = ParameterModel.of(method);
-        if (method.isAnnotationPresent(Order.class)) {
-            Order order = method.getAnnotation(Order.class);
-            subscriber.order = order.value();
-        }
+        subscriber.handler = handler;
+        subscriber.parameters = parameters;
         return subscriber;
     }
 
@@ -165,10 +150,10 @@ public class MqttSubscriber {
             Object value = null;
             if (target == MqttMessage.class) {
                 value = mqttMessage;
-            } else if (parameter.isSign() && mqttMessage != null) {
+            } else if (parameter.isPayload() && mqttMessage != null) {
                 value = MqttConversionService.getSharedInstance().fromBytes(mqttMessage.getPayload(), target, converters);
             } else if (name != null) {
-                if (pathValueMap.containsKey(name)){
+                if (pathValueMap.containsKey(name)) {
                     value = fromTopic(pathValueMap.get(name), target);
                 }
             } else if (target == String.class) {
@@ -178,7 +163,7 @@ public class MqttSubscriber {
             }
             if (value == null) {
                 if (parameter.isRequired()) {
-                    throw new NullParameterException();
+                    throw new NullParameterException(parameter);
                 }
                 value = parameter.getDefaultValue();
             }
@@ -197,15 +182,11 @@ public class MqttSubscriber {
         }
     }
 
-    public int getOrder() {
-        return order;
-    }
-
     public LinkedList<TopicPair> getTopics() {
         return topics;
     }
 
-    public boolean contains(String clientId) {
+    public boolean containsClientId(String clientId) {
         if (this.clientIds == null || this.clientIds.length == 0) {
             return true; // for all client
         }
@@ -217,17 +198,37 @@ public class MqttSubscriber {
         return false;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        MqttSubscriber that = (MqttSubscriber) o;
-        return Objects.equals(bean, that.bean) &&
-                Objects.equals(method, that.method);
-    }
+    /**
+     * 是否已经填充参数了
+     */
+    private boolean hasResolveEmbeddedValue;
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(bean, method);
+    /**
+     * 主要用来填充spring的参数
+     *
+     * @param factory spring
+     */
+    public void resolveEmbeddedValue(ConfigurableBeanFactory factory) {
+        if (hasResolveEmbeddedValue) {
+            return;
+        }
+        hasResolveEmbeddedValue = true;
+        if (factory != null) {
+            String[] clients = subscribe.clients();
+            for (int i = 0; i < clients.length; i++) {
+                clients[i] = factory.resolveEmbeddedValue(clients[i]);
+            }
+            String[] value = subscribe.value();
+            for (int i = 0; i < value.length; i++) {
+                value[i] = factory.resolveEmbeddedValue(value[i]);
+            }
+        }
+
+        HashMap<String, Class<?>> paramTypeMap = new HashMap<>();
+        this.parameters.stream()
+                .filter(param -> param.getName() != null)
+                .forEach(param -> paramTypeMap.put(param.getName(), param.getType()));
+        this.clientIds = subscribe.clients();
+        this.setTopics(subscribe, paramTypeMap);
     }
 }

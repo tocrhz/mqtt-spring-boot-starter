@@ -1,4 +1,4 @@
-package com.github.tocrhz.mqtt.autoconfigure;
+package com.github.tocrhz.mqtt.convert;
 
 import com.github.tocrhz.mqtt.convert.other.*;
 import org.slf4j.Logger;

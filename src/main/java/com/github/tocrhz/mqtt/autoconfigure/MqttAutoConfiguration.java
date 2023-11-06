@@ -1,7 +1,10 @@
 package com.github.tocrhz.mqtt.autoconfigure;
 
+import com.github.tocrhz.mqtt.convert.MqttConversionService;
+import com.github.tocrhz.mqtt.properties.MqttConfigAdapter;
 import com.github.tocrhz.mqtt.properties.MqttProperties;
 import com.github.tocrhz.mqtt.publisher.MqttPublisher;
+import com.github.tocrhz.mqtt.publisher.SimpleMqttClient;
 import com.github.tocrhz.mqtt.subscriber.MqttSubscriber;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -38,11 +41,39 @@ public class MqttAutoConfiguration {
     }
 
 
+    /**
+     * 若没有 MqttConfigurer 则创建一个空的
+     */
     @Bean
-    @ConditionalOnMissingBean(MqttConfigurer.class)
-    public MqttConfigurer mqttConfigurer() {
-        return new MqttConfigurer() {
+    @ConditionalOnMissingBean(MqttConfigAdapter.class)
+    public MqttConfigAdapter mqttConfigAdapter() {
+        return new MqttConfigAdapter() {
         };
+    }
+
+    /**
+     * default MqttConnector.
+     * <p>
+     * Ensure the final initialization, the order is {@link org.springframework.core.Ordered#LOWEST_PRECEDENCE}
+     *
+     * @param adapter    MqttConfigurer
+     * @param properties MqttProperties
+     * @return MqttConnector
+     */
+    @Bean
+    public MqttClientManager mqttClientManager(MqttProperties properties, MqttConfigAdapter adapter) {
+        // init property before connected.
+        adapter.beforeResolveEmbeddedValue(MqttSubscriber.SUBSCRIBERS);
+        for (MqttSubscriber subscriber : MqttSubscriber.SUBSCRIBERS) {
+            subscriber.resolveEmbeddedValue(factory);
+        }
+        adapter.afterResolveEmbeddedValue(MqttSubscriber.SUBSCRIBERS);
+        MqttClientManager manager = new MqttClientManager(properties, adapter);
+        // 将mqtt客户端添加进去
+        properties.forEach(manager::clientNew);
+        // 建立连接
+        SimpleMqttClient.scheduled.execute(manager::afterInit);
+        return manager;
     }
 
 
@@ -53,30 +84,7 @@ public class MqttAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(MqttPublisher.class)
-    public MqttPublisher mqttPublisher() {
-        return new MqttPublisher();
-    }
-
-    /**
-     * default MqttConnector.
-     * <p>
-     * Ensure the final initialization, the order is {@link org.springframework.core.Ordered#LOWEST_PRECEDENCE}
-     *
-     * @param configurer MqttConfigurer
-     * @param properties MqttProperties
-     * @return MqttConnector
-     */
-    @Bean
-    @Order // Ordered.LOWEST_PRECEDENCE
-    public MqttConnector mqttConnector(MqttProperties properties, MqttConfigurer configurer) {
-        // init property before connected.
-        configurer.beforeResolveEmbeddedValue(MqttSubscribeProcessor.SUBSCRIBERS);
-        for (MqttSubscriber subscriber : MqttSubscribeProcessor.SUBSCRIBERS) {
-            subscriber.afterInit(factory::resolveEmbeddedValue);
-        }
-        configurer.afterResolveEmbeddedValue(MqttSubscribeProcessor.SUBSCRIBERS);
-        MqttConnector connector = new MqttConnector();
-        connector.start(properties, configurer);
-        return connector;
+    public MqttPublisher mqttPublisher(MqttClientManager manager) {
+        return new MqttPublisher(manager);
     }
 }

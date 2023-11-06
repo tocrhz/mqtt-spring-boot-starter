@@ -5,7 +5,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 /**
  * MQTT连接配置
  */
-public class ConnectionProperties {
+public class MqttConnectionProperties {
 
     /**
      * MQTT服务器地址, 必填, 可以配置多个.
@@ -36,12 +36,12 @@ public class ConnectionProperties {
     /**
      * 是否启用共享订阅,对于不同的Broker,共享订阅可能无效(EMQ已测可用).
      */
-    private Boolean enableSharedSubscription;
+    private Boolean enableSharedSubscription = true;
 
     /**
      * 发布消息默认使用的QOS, 默认 0.
      */
-    private Integer defaultPublishQos;
+    private Integer defaultPublishQos = 0;
 
     /**
      * 最大重连等待时间(秒).
@@ -213,6 +213,7 @@ public class ConnectionProperties {
 
     /**
      * 发布消息默认使用的QOS, 默认 0.
+     *
      * @return Integer
      */
     public Integer getDefaultPublishQos() {

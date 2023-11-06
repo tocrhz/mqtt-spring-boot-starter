@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.util.VersionUtil;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.github.tocrhz.mqtt.convert.MqttConversionService;
 import com.github.tocrhz.mqtt.convert.PayloadDeserialize;
 import com.github.tocrhz.mqtt.convert.PayloadSerialize;
 import com.github.tocrhz.mqtt.convert.jackson.JacksonPayloadDeserialize;
@@ -89,7 +90,7 @@ public class PayloadJacksonAutoConfiguration {
     }
 
     public static class MqttDefaultJacksonModule extends SimpleModule {
-        public static final Version VERSION = VersionUtil.parseVersion("1.2.8",
+        public static final Version VERSION = VersionUtil.parseVersion("1.3.1",
                 "com.github.tocrhz",
                 "mqtt-spring-boot-starter");
 

@@ -23,9 +23,9 @@
     },
     {
       "name": "mqtt.clients",
-      "type": "java.util.Map<java.lang.String, com.github.tocrhz.mqtt.properties.ConnectionProperties>",
+      "type": "java.util.Map<java.lang.String, com.github.tocrhz.mqtt.properties.MqttConnectionProperties>",
       "sourceType": "com.github.tocrhz.mqtt.properties.MqttProperties",
-      "description": "多客户端配置,key:客户端ID."
+      "description": "多客户端配置,key=默认的客户端ID."
     },
     {
       "name": "mqtt.uri",

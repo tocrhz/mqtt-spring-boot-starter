@@ -56,7 +56,7 @@ public class TopicPair {
     private static Pattern toPattern(String topic, LinkedList<TopicParam> params, HashMap<String, Class<?>> paramTypeMap) {
         String pattern = replaceSymbols(topic);
         Matcher matcher = TO_PATTERN.matcher(pattern);
-        StringBuffer buffer = new StringBuffer("^");
+        StringBuilder builder = new StringBuilder("^");
         int group = 1;
         while (matcher.find()) {
             String paramName = matcher.group(1);
@@ -64,23 +64,23 @@ public class TopicPair {
             if (paramTypeMap.containsKey(paramName)) {
                 Class<?> paramType = paramTypeMap.get(paramName);
                 if (Number.class.isAssignableFrom(paramType)) {
-                    matcher.appendReplacement(buffer, NUMBER_PARAM);
+                    matcher.appendReplacement(builder, NUMBER_PARAM);
                     ++group;
                 } else {
-                    matcher.appendReplacement(buffer, STRING_PARAM);
+                    matcher.appendReplacement(builder, STRING_PARAM);
                 }
             } else {
-                matcher.appendReplacement(buffer, STRING_PARAM);
+                matcher.appendReplacement(builder, STRING_PARAM);
             }
             ++group;
         }
-        matcher.appendTail(buffer);
-        buffer.append("$");
-        return Pattern.compile(buffer.toString());
+        matcher.appendTail(builder);
+        builder.append("$");
+        return Pattern.compile(builder.toString());
     }
 
-    public String getTopic(boolean sharedEnable) {
-        if (this.shared && sharedEnable) {
+    public String getTopic(boolean enableShare) {
+        if (this.shared && enableShare) {
             if (StringUtils.hasText(this.group)) {
                 return "$share/" + this.group + "/" + this.topic;
             } else {

@@ -1,15 +1,7 @@
 package com.github.tocrhz.mqtt.publisher;
 
-import com.github.tocrhz.mqtt.autoconfigure.MqttConnector;
-import com.github.tocrhz.mqtt.autoconfigure.MqttConversionService;
+import com.github.tocrhz.mqtt.autoconfigure.MqttClientManager;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
-import org.eclipse.paho.client.mqttv3.IMqttAsyncClient;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
-
-import java.util.Objects;
 
 /**
  * Used to publish message
@@ -17,138 +9,49 @@ import java.util.Objects;
  * @author tocrhz
  */
 public class MqttPublisher {
-    private final static Logger log = LoggerFactory.getLogger(MqttPublisher.class);
+    private final MqttClientManager manager;
 
-    /**
-     * 发送消息到指定主题 qos=1
-     *
-     * @param topic   主题
-     * @param payload 消息内容
-     * @throws IllegalArgumentException if topic is empty
-     * @throws NullPointerException     if client not exists
-     */
+    public MqttPublisher(MqttClientManager manager) {
+        this.manager = manager;
+    }
+
+    public SimpleMqttClient client() {
+        return manager.clientGetOrDefault(null);
+    }
+
+    public SimpleMqttClient client(String clientId) {
+        return manager.clientGetOrDefault(clientId);
+    }
+
     public void send(String topic, Object payload) {
-        send(MqttConnector.DefaultClientId, topic, payload, MqttConnector.DefaultPublishQos, false, null);
+        client().send(topic, payload);
     }
 
-    /**
-     * 发送消息到指定主题 qos=1
-     *
-     * @param topic    主题
-     * @param payload  消息内容
-     * @param callback 消息发送完成后的回调
-     * @throws IllegalArgumentException if topic is empty
-     * @throws NullPointerException     if client not exists
-     */
+    public void send(String topic, Object payload, boolean retained) {
+        client().send(topic, payload, retained);
+    }
+
     public void send(String topic, Object payload, IMqttActionListener callback) {
-        send(MqttConnector.DefaultClientId, topic, payload, MqttConnector.DefaultPublishQos, false, callback);
+        client().send(topic, payload, callback);
     }
 
-    /**
-     * 发送消息到指定主题 qos=1
-     *
-     * @param clientId 客户端ID
-     * @param topic    主题
-     * @param payload  消息内容
-     * @throws IllegalArgumentException if topic is empty
-     * @throws NullPointerException     if client not exists
-     */
-    public void send(String clientId, String topic, Object payload) {
-        send(clientId, topic, payload, MqttConnector.getDefaultQosById(clientId), false, null);
+    public void send(String topic, Object payload, boolean retained, IMqttActionListener callback) {
+        client().send(topic, payload, retained, callback);
     }
 
-    /**
-     * 发送消息到指定主题 qos=1
-     *
-     * @param clientId 客户端ID
-     * @param topic    主题
-     * @param payload  消息内容
-     * @param callback 消息发送完成后的回调
-     * @throws IllegalArgumentException if topic is empty
-     * @throws NullPointerException     if client not exists
-     */
-    public void send(String clientId, String topic, Object payload, IMqttActionListener callback) {
-        send(clientId, topic, payload, MqttConnector.getDefaultQosById(clientId), false, callback);
+    public void send(String topic, Object payload, int qos) {
+        client().send(topic, payload, qos);
     }
 
-
-    /**
-     * 发送消息到指定主题, 指定qos, retained
-     *
-     * @param topic    主题
-     * @param payload  消息内容
-     * @param qos      服务质量
-     * @param retained 保留消息
-     * @throws IllegalArgumentException if topic is empty
-     * @throws NullPointerException     if client not exists
-     */
     public void send(String topic, Object payload, int qos, boolean retained) {
-        send(MqttConnector.DefaultClientId, topic, payload, qos, retained, null);
+        client().send(topic, payload, qos, retained);
     }
 
-    /**
-     * 发送消息到指定主题, 指定qos, retained
-     *
-     * @param clientId 客户端ID
-     * @param topic    主题
-     * @param payload  消息内容
-     * @param qos      服务质量
-     * @param retained 保留消息
-     * @throws IllegalArgumentException if topic is empty
-     * @throws NullPointerException     if client not exists
-     */
-    public void send(String clientId, String topic, Object payload, int qos, boolean retained) {
-        send(clientId, topic, payload, qos, retained, null);
+    public void send(String topic, Object payload, int qos, IMqttActionListener callback) {
+        client().send(topic, payload, qos, callback);
     }
 
-    /**
-     * 发送消息到指定主题, 指定qos, retained
-     *
-     * @param topic    主题
-     * @param payload  消息内容
-     * @param qos      服务质量
-     * @param retained 保留消息
-     * @param callback 消息发送完成后的回调
-     * @throws IllegalArgumentException if topic is empty
-     * @throws NullPointerException     if client not exists
-     */
     public void send(String topic, Object payload, int qos, boolean retained, IMqttActionListener callback) {
-        send(MqttConnector.DefaultClientId, topic, payload, qos, retained, callback);
-    }
-
-
-    /**
-     * 发送消息到指定主题, 指定qos, retained
-     *
-     * @param clientId 客户端ID
-     * @param topic    主题
-     * @param payload  消息内容
-     * @param qos      服务质量
-     * @param retained 保留消息
-     * @param callback 消息发送完成后的回调
-     * @throws IllegalArgumentException if topic is empty
-     * @throws NullPointerException     if client not exists
-     */
-    public void send(String clientId, String topic, Object payload, int qos, boolean retained, IMqttActionListener callback) {
-        Assert.isTrue(topic != null && !topic.trim().isEmpty(), "topic cannot be blank.");
-        IMqttAsyncClient client = Objects.requireNonNull(MqttConnector.getClientById(clientId));
-        byte[] bytes = MqttConversionService.getSharedInstance().toBytes(payload);
-        if (bytes == null) {
-            return;
-        }
-        MqttMessage message = toMessage(bytes, qos, retained);
-        try {
-            client.publish(topic, message, null, callback);
-        } catch (Throwable throwable) {
-            log.error("message publish error: {}", throwable.getMessage(), throwable);
-        }
-    }
-
-    private MqttMessage toMessage(byte[] payload, int qos, boolean retained) {
-        MqttMessage message = new MqttMessage();
-        message.setPayload(payload);
-        message.setQos(qos);
-        message.setRetained(retained);
-        return message;
+        client().send(topic, payload, qos, retained, callback);
     }
 }
