@@ -54,13 +54,7 @@
             <optional>true</optional>
         </dependency>
     </dependencies>
-    <distributionManagement>
-        <repository>
-            <id>wellsjava</id>
-            <name>wellsjava</name>
-            <url>http://cd.wellsgroup.cn:8081/nexus/content/repositories/wellsjava</url>
-        </repository>
-    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>
