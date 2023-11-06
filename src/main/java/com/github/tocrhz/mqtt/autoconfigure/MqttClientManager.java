@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 /**
  * 客户端连接管理一下
  */
+@SuppressWarnings("unused")
 public class MqttClientManager implements DisposableBean {
     private final static Logger log = LoggerFactory.getLogger(MqttClientManager.class);
     private final static LinkedHashMap<String, SimpleMqttClient> MQTT_CLIENT_MAP = new LinkedHashMap<>();
@@ -48,8 +49,8 @@ public class MqttClientManager implements DisposableBean {
         return clientNew(clientId, options, properties.getDefaultPublishQos());
     }
 
-    public SimpleMqttClient clientNew(String clientId, MqttConnectOptions options) {
-        return clientNew(clientId, options, null);
+    void clientNew(String clientId, MqttConnectOptions options) {
+        clientNew(clientId, options, null);
     }
 
     public SimpleMqttClient clientNew(String clientId, MqttConnectOptions options, Integer defaultPublishQos) {

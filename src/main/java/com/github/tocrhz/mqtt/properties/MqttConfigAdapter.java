@@ -14,6 +14,7 @@ import java.util.Set;
 /**
  * 配置类.
  */
+@SuppressWarnings("unused")
 public abstract class MqttConfigAdapter {
     protected MqttProperties mqttProperties;
 

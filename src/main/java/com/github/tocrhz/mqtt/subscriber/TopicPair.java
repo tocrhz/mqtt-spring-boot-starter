@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
  *
  * @author tocrhz
  */
+@SuppressWarnings("unused")
 public class TopicPair {
     private final static Pattern TO_PATTERN = Pattern.compile("\\{(\\w+)}");
     private final static Pattern TO_TOPIC = Pattern.compile("[^/]*\\{\\w+}[^/]*");

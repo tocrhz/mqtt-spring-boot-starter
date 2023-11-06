@@ -8,6 +8,7 @@ import org.eclipse.paho.client.mqttv3.IMqttActionListener;
  *
  * @author tocrhz
  */
+@SuppressWarnings("unused")
 public class MqttPublisher {
     private final MqttClientManager manager;
 

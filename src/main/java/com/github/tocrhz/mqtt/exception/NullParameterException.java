@@ -2,6 +2,7 @@ package com.github.tocrhz.mqtt.exception;
 
 import com.github.tocrhz.mqtt.subscriber.ParameterModel;
 
+@SuppressWarnings("unused")
 public class NullParameterException extends RuntimeException {
 
     public NullParameterException() {

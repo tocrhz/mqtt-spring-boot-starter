@@ -2,6 +2,7 @@ package com.github.tocrhz.mqtt.properties;
 
 import org.springframework.util.Assert;
 
+@SuppressWarnings("unused")
 public class MqttClientRegistry {
 
     private final MqttProperties mqttProperties;
