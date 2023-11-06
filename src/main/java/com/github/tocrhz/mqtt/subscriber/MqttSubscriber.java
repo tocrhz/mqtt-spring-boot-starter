@@ -97,22 +97,6 @@ public class MqttSubscriber {
         return qos;
     }
 
-    private boolean[] fillShared(String[] topics, boolean[] shared) {
-        int topic_len = topics.length;
-        int qos_len = shared.length;
-        if (topic_len > qos_len) {
-            boolean[] temp = new boolean[topic_len];
-            System.arraycopy(shared, 0, temp, 0, qos_len);
-            Arrays.fill(temp, qos_len, topic_len, shared[qos_len - 1]);
-            return temp;
-        } else if (qos_len > topic_len) {
-            boolean[] temp = new boolean[topic_len];
-            System.arraycopy(shared, 0, temp, 0, topic_len);
-            return temp;
-        }
-        return shared;
-    }
-
     private String[] fillGroups(String[] topics, String[] groups) {
         int topic_len = topics.length;
         int qos_len = groups.length;
