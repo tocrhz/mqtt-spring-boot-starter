@@ -72,11 +72,10 @@ public class MqttSubscriber {
     private void setTopics(SubscriberModel subscribe, HashMap<String, Class<?>> paramTypeMap) {
         String[] topics = subscribe.value();
         int[] qos = fillQos(topics, subscribe.qos());
-        boolean[] shared = fillShared(topics, subscribe.shared());
         String[] groups = fillGroups(topics, subscribe.groups());
         LinkedHashSet<TopicPair> temps = new LinkedHashSet<>();
         for (int i = 0; i < topics.length; i++) {
-            temps.add(TopicPair.of(topics[i], qos[i], shared[i], groups[i], paramTypeMap));
+            temps.add(TopicPair.of(topics[i], qos[i], groups[i], paramTypeMap));
         }
         this.topics.addAll(temps);
         this.topics.sort(Comparator.comparingInt(TopicPair::order));

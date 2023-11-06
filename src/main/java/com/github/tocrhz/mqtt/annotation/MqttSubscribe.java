@@ -37,24 +37,8 @@ public @interface MqttSubscribe {
     String[] clients() default {};
 
     /**
-     * Shared subscription, default false;
-     * <p>
-     * for topic one-to-one.
-     * <p>
-     * If not one-to-one. fill by last shared and ignore the superfluous.
-     *
-     * @return true or false
-     * @see #groups()
-     */
-    boolean[] shared() default false;
-
-    /**
      * Shared subscription group,
-     * <p>
-     * if default, use '$queue/&lt;topic&gt;'
-     * <p>
-     * if group not blank, use '$share/&lt;group&gt;/&lt;topic&gt;'
-     * for topic one-to-one.
+     * if group not blank, use '$share/&lt;group&gt;/&lt;topic&gt;' for topic one-to-one.
      * <p>
      * If not one-to-one. fill by last groups and ignore the superfluous.
      *

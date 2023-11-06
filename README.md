@@ -32,7 +32,7 @@ MQTT starter for Spring Boot, easier to use.
 <dependency>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>1.2.8.1</version>
+    <version>1.4.0</version>
 </dependency>
 ```
 
@@ -109,23 +109,11 @@ public class MqttMessageHandler {
     }
 
     /**
-     * subscribe = $queue/test/+
-     * topic = test/+
-     * pattern = ^test/([^/]+)$
-     */
-    @MqttSubscribe(value="test/{id}", shared=true)
-    public void sub(String topic, @NamedValue("id") String id, @Payload UserInfo userInfo) {
-        logger.info("receive from   : {}", topic);
-        logger.info("named value id : {}", id);
-        logger.info("object payload : {}", userInfo);
-    }
-
-    /**
      * subscribe = $share/gp/test/+
      * topic = test/+
      * pattern = ^test/([^/]+)$
      */
-    @MqttSubscribe(value="test/{id}", shared=true, groups="gp")
+    @MqttSubscribe(value="test/{id}", groups="gp")
     public void sub(String topic, @NamedValue("id") String id, @Payload UserInfo userInfo) {
         logger.info("receive from   : {}", topic);
         logger.info("named value id : {}", id);
@@ -153,8 +141,8 @@ public class DemoService {
     public void sendTest(){
         publisher.send("test/send", "test message, default QOS is 0.");
         publisher.send("test/send", "Specify QOS as 1.", 1);
-        publisher.send("test/send", "Specify QOS as 2.", 2, false);
-        publisher.send("multi_client_1", "test/send", "test message, default QOS is 0.");
+        publisher.client().send("test/send", "Specify QOS as 2.", 2, false);
+        publisher.client("multi_client_1").send("test/send", "test message, default QOS is 0.");
     }
 }
 ```
@@ -200,7 +188,7 @@ public class JacksonPayloadDeserialize implements PayloadDeserialize {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked"})
     public <T> Converter<byte[], T> getConverter(Class<T> targetType) {
         return source -> {
             try {
@@ -231,7 +219,7 @@ import java.lang.reflect.Method;
 public class MyMqttConfigurer extends MqttConfigurer {
 
     /**
-     * 在处理嵌入参数之前
+     * 在处理嵌入参数之后
      */
     public void afterResolveEmbeddedValue(LinkedList<MqttSubscriber> subscribers) {
 
@@ -260,7 +248,7 @@ public class MyMqttConfigurer extends MqttConfigurer {
      * @param clientId 客户端ID
      * @param options  MqttConnectOptions
      */
-    public IMqttAsyncClient postCreate(String clientId, MqttConnectOptions options) throws MqttException {
+    public IMqttAsyncClient postCreate(String clientId, MqttConnectOptions options)  {
         return new MqttAsyncClient(options.getServerURIs()[0], clientId, new MemoryPersistence());
     }
 
