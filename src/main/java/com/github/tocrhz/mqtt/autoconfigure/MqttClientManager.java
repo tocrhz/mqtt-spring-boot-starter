@@ -1,5 +1,6 @@
 package com.github.tocrhz.mqtt.autoconfigure;
 
+import com.github.tocrhz.mqtt.convert.MqttConversionService;
 import com.github.tocrhz.mqtt.properties.MqttConfigAdapter;
 import com.github.tocrhz.mqtt.properties.MqttConnectionProperties;
 import com.github.tocrhz.mqtt.properties.MqttProperties;
@@ -138,7 +139,7 @@ public class MqttClientManager implements DisposableBean {
      */
     private Set<TopicPair> mergeTopics(String clientId, boolean enableShared) {
         Set<TopicPair> topicPairs = new HashSet<>();
-        for (MqttSubscriber subscriber : MqttSubscriber.SUBSCRIBERS) {
+        for (MqttSubscriber subscriber : MqttSubscriber.list()) {
             if (subscriber.containsClientId(clientId)) {
                 topicPairs.addAll(subscriber.getTopics());
             }
@@ -177,6 +178,7 @@ public class MqttClientManager implements DisposableBean {
 
     @Override
     public void destroy() {
+        // 卸载的时候把缓存清空
         log.info("shutting down all mqtt client.");
         MQTT_CLIENT_MAP.forEach((id, client) -> {
             try {
@@ -186,5 +188,9 @@ public class MqttClientManager implements DisposableBean {
             }
         });
         MQTT_CLIENT_MAP.clear();
+        // 清空订阅处理方法缓存
+        MqttSubscriber.destroy();
+        // 清空类型转换缓存
+        MqttConversionService.destroy();
     }
 }

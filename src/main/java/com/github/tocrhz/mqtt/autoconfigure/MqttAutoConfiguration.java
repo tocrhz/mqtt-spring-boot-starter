@@ -36,7 +36,6 @@ public class MqttAutoConfiguration {
     public MqttAutoConfiguration(ListableBeanFactory beanFactory, ConfigurableBeanFactory factory) {
         // register converters
         MqttConversionService.addBeans(beanFactory);
-        beanFactory.getBeanDefinitionNames();
         this.factory = factory;
     }
 
@@ -63,11 +62,11 @@ public class MqttAutoConfiguration {
     @Bean
     public MqttClientManager mqttClientManager(MqttProperties properties, MqttConfigAdapter adapter) {
         // init property before connected.
-        adapter.beforeResolveEmbeddedValue(MqttSubscriber.SUBSCRIBERS);
-        for (MqttSubscriber subscriber : MqttSubscriber.SUBSCRIBERS) {
+        adapter.beforeResolveEmbeddedValue(MqttSubscriber.list());
+        for (MqttSubscriber subscriber : MqttSubscriber.list()) {
             subscriber.resolveEmbeddedValue(factory);
         }
-        adapter.afterResolveEmbeddedValue(MqttSubscriber.SUBSCRIBERS);
+        adapter.afterResolveEmbeddedValue(MqttSubscriber.list());
         MqttClientManager manager = new MqttClientManager(properties, adapter);
         // 将mqtt客户端添加进去
         properties.forEach(manager::clientNew);

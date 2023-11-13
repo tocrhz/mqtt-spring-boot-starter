@@ -27,14 +27,9 @@ public class MqttSubscribeProcessor implements BeanPostProcessor {
         for (Method method : methods) {
             if (method.isAnnotationPresent(MqttSubscribe.class)) {
                 SubscriberModel model = SubscriberModel.of(method.getAnnotation(MqttSubscribe.class));
-                MqttSubscriber.SUBSCRIBERS.add(MqttSubscriber.of(model, bean, method));
+                MqttSubscriber.add(MqttSubscriber.of(model, bean, method));
             }
         }
-        return bean;
-    }
-
-    @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         return bean;
     }
 }
