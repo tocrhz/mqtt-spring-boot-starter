@@ -9,19 +9,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 简单封装下客户端
+ *
+ * @param id           客户端ID
+ * @param client       客户端
+ * @param options      连接选项
+ * @param enableShared 是否支持共享订阅
+ * @param qos          默认的发布QOS
+ * @param subscribers  处理消息的方法集合
+ * @param adapter      扩展
  */
-public record SimpleMqttClient(String id, MqttConnectOptions options
-        , IMqttAsyncClient client, Set<TopicPair> topics, boolean enableShared, int qos, MqttConfigAdapter adapter) {
+public record SimpleMqttClient(String id, IMqttAsyncClient client, MqttConnectOptions options
+        , boolean enableShared, int qos
+        , LinkedList<MqttSubscriber> subscribers
+        , MqttConfigAdapter adapter) {
     private static final Logger log = LoggerFactory.getLogger(SimpleMqttClient.class);
-    public static final ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(2);
+    private static final ScheduledExecutorService scheduled = Executors.newSingleThreadScheduledExecutor();
 
     public void connect() {
         try {
@@ -57,7 +67,7 @@ public record SimpleMqttClient(String id, MqttConnectOptions options
 
                 @Override
                 public void messageArrived(String topic, MqttMessage message) {
-                    for (MqttSubscriber subscriber : MqttSubscriber.SUBSCRIBERS) {
+                    for (MqttSubscriber subscriber : subscribers) {
                         subscriber.accept(id, topic, message);
                     }
                 }
@@ -71,8 +81,55 @@ public record SimpleMqttClient(String id, MqttConnectOptions options
         }
     }
 
+    /**
+     * 合并相似的主题(实际没啥用)
+     * merge the same topic
+     *
+     * @param clientId clientId
+     * @return TopicPairs
+     */
+    private Set<TopicPair> mergeTopics(String clientId, boolean enableShared) {
+        Set<TopicPair> topicPairs = new HashSet<>();
+        for (MqttSubscriber subscriber : subscribers) {
+            if (subscriber.containsClientId(clientId)) {
+                topicPairs.addAll(subscriber.getTopics());
+            }
+        }
+        if (topicPairs.isEmpty()) {
+            return topicPairs;
+        }
+        TopicPair[] pairs = new TopicPair[topicPairs.size()];
+        for (TopicPair topic : topicPairs) {
+            for (int i = 0; i < pairs.length; ++i) {
+                TopicPair pair = pairs[i];
+                if (pair == null) {
+                    pairs[i] = topic;
+                    break;
+                }
+                if (pair.getQos() != topic.getQos()) {
+                    continue;
+                }
+                String temp = pair.getTopic(enableShared)
+                        .replace('+', '\u0000')
+                        .replace("#", "\u0000/\u0000");
+                if (MqttTopic.isMatched(topic.getTopic(enableShared), temp)) {
+                    pairs[i] = topic;
+                    continue;
+                }
+                temp = topic.getTopic(enableShared)
+                        .replace('+', '\u0000')
+                        .replace("#", "\u0000/\u0000");
+                if (MqttTopic.isMatched(pair.getTopic(enableShared), temp)) {
+                    break;
+                }
+            }
+        }
+        return Arrays.stream(pairs).filter(Objects::nonNull).collect(Collectors.toSet());
+    }
+
     private void subscribe() {
         try {
+            Set<TopicPair> topics = mergeTopics(id, enableShared);
             this.adapter.beforeSubscribe(id, topics);
 
             if (topics.isEmpty()) {

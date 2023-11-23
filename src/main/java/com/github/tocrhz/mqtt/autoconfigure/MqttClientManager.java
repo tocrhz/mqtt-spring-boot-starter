@@ -6,16 +6,17 @@ import com.github.tocrhz.mqtt.properties.MqttConnectionProperties;
 import com.github.tocrhz.mqtt.properties.MqttProperties;
 import com.github.tocrhz.mqtt.publisher.SimpleMqttClient;
 import com.github.tocrhz.mqtt.subscriber.MqttSubscriber;
-import com.github.tocrhz.mqtt.subscriber.TopicPair;
-import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.IMqttAsyncClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 
 /**
  * 客户端连接管理一下
@@ -23,14 +24,15 @@ import java.util.stream.Collectors;
 @SuppressWarnings("unused")
 public class MqttClientManager implements DisposableBean {
     private final static Logger log = LoggerFactory.getLogger(MqttClientManager.class);
-    private final static LinkedHashMap<String, SimpleMqttClient> MQTT_CLIENT_MAP = new LinkedHashMap<>();
+    private final LinkedHashMap<String, SimpleMqttClient> clients = new LinkedHashMap<>();
+    private final LinkedList<MqttSubscriber> subscribers;
     private final MqttProperties properties;
     private final MqttConfigAdapter adapter;
-
     private String defaultClientId = null;
 
-    public MqttClientManager(MqttProperties properties, MqttConfigAdapter adapter) {
+    public MqttClientManager(LinkedList<MqttSubscriber> subscribers, MqttProperties properties, MqttConfigAdapter adapter) {
         this.properties = properties;
+        this.subscribers = subscribers;
         this.adapter = adapter;
         adapter.setProperties(properties);
     }
@@ -41,7 +43,7 @@ public class MqttClientManager implements DisposableBean {
         Assert.hasText(clientId, "property clientId is required.");
         Assert.notEmpty(properties.getUri(), "property uri cannot be empty.");
         Assert.hasText(properties.getUri()[0], "property uri is required.");
-        if (MQTT_CLIENT_MAP.containsKey(clientId)) {
+        if (clients.containsKey(clientId)) {
             clientClose(clientId);
         }
         // 填充默认值
@@ -56,7 +58,7 @@ public class MqttClientManager implements DisposableBean {
 
     public SimpleMqttClient clientNew(String clientId, MqttConnectOptions options, Integer defaultPublishQos) {
         Assert.hasText(clientId, "clientId is required.");
-        if (MQTT_CLIENT_MAP.containsKey(clientId)) {
+        if (clients.containsKey(clientId)) {
             clientClose(clientId);
         }
         // 创建客户端
@@ -69,20 +71,19 @@ public class MqttClientManager implements DisposableBean {
         }
         // 创建topic
         boolean enableShared = this.properties.isEnableSharedSubscription(clientId);
-        Set<TopicPair> topicPairs = mergeTopics(clientId, enableShared);
         int qos = defaultPublishQos != null ? defaultPublishQos : this.properties.getDefaultPublishQos(clientId);
         // 创建客户端对象
-        SimpleMqttClient smc = new SimpleMqttClient(clientId, options, client, topicPairs, enableShared, qos, adapter);
-        MQTT_CLIENT_MAP.put(clientId, smc);
+        SimpleMqttClient smc = new SimpleMqttClient(clientId, client, options, enableShared, qos, subscribers, adapter);
+        clients.put(clientId, smc);
         return smc;
     }
 
     public void clientClose(String clientId) {
-        if (MQTT_CLIENT_MAP.containsKey(clientId)) {
+        if (clients.containsKey(clientId)) {
             if (defaultClientId != null && defaultClientId.equals(clientId)) {
                 String oldDefault = defaultClientId;
                 String newDefault = null;
-                for (SimpleMqttClient value : MQTT_CLIENT_MAP.values()) {
+                for (SimpleMqttClient value : clients.values()) {
                     if (!value.id().equals(clientId)) {
                         newDefault = value.id();
                     }
@@ -95,20 +96,20 @@ public class MqttClientManager implements DisposableBean {
                     log.warn("default mqtt client '{}' closed, other client not exists. ", oldDefault);
                 }
             }
-            SimpleMqttClient client = MQTT_CLIENT_MAP.remove(clientId);
+            SimpleMqttClient client = clients.remove(clientId);
             client.close();
         }
     }
 
     public SimpleMqttClient clientGetOrDefault(String clientId) {
-        if (StringUtils.hasText(clientId) && MQTT_CLIENT_MAP.containsKey(clientId)) {
-            return MQTT_CLIENT_MAP.get(clientId);
+        if (StringUtils.hasText(clientId) && clients.containsKey(clientId)) {
+            return clients.get(clientId);
         }
-        return MQTT_CLIENT_MAP.get(defaultClientId);
+        return clients.get(defaultClientId);
     }
 
     public boolean setDefaultClientId(String clientId) {
-        if (StringUtils.hasText(clientId) && MQTT_CLIENT_MAP.containsKey(clientId)) {
+        if (StringUtils.hasText(clientId) && clients.containsKey(clientId)) {
             defaultClientId = clientId;
             return true;
         }
@@ -116,9 +117,8 @@ public class MqttClientManager implements DisposableBean {
     }
 
     void afterInit() {
-
         // 初始化完成后，全部建立连接
-        MQTT_CLIENT_MAP.forEach((id, client) -> {
+        clients.forEach((id, client) -> {
             try {
                 if (defaultClientId == null) {
                     defaultClientId = id;
@@ -130,66 +130,20 @@ public class MqttClientManager implements DisposableBean {
         });
     }
 
-    /**
-     * 合并相似的主题(实际没啥用)
-     * merge the same topic
-     *
-     * @param clientId clientId
-     * @return TopicPairs
-     */
-    private Set<TopicPair> mergeTopics(String clientId, boolean enableShared) {
-        Set<TopicPair> topicPairs = new HashSet<>();
-        for (MqttSubscriber subscriber : MqttSubscriber.list()) {
-            if (subscriber.containsClientId(clientId)) {
-                topicPairs.addAll(subscriber.getTopics());
-            }
-        }
-        if (topicPairs.isEmpty()) {
-            return topicPairs;
-        }
-        TopicPair[] pairs = new TopicPair[topicPairs.size()];
-        for (TopicPair topic : topicPairs) {
-            for (int i = 0; i < pairs.length; ++i) {
-                TopicPair pair = pairs[i];
-                if (pair == null) {
-                    pairs[i] = topic;
-                    break;
-                }
-                if (pair.getQos() != topic.getQos()) {
-                    continue;
-                }
-                String temp = pair.getTopic(enableShared)
-                        .replace('+', '\u0000')
-                        .replace("#", "\u0000/\u0000");
-                if (MqttTopic.isMatched(topic.getTopic(enableShared), temp)) {
-                    pairs[i] = topic;
-                    continue;
-                }
-                temp = topic.getTopic(enableShared)
-                        .replace('+', '\u0000')
-                        .replace("#", "\u0000/\u0000");
-                if (MqttTopic.isMatched(pair.getTopic(enableShared), temp)) {
-                    break;
-                }
-            }
-        }
-        return Arrays.stream(pairs).filter(Objects::nonNull).collect(Collectors.toSet());
-    }
-
     @Override
     public void destroy() {
         // 卸载的时候把缓存清空
         log.info("shutting down all mqtt client.");
-        MQTT_CLIENT_MAP.forEach((id, client) -> {
+        clients.forEach((id, client) -> {
             try {
                 client.close();
             } catch (Exception e) {
                 log.error("mqtt client '{}' close error: {}", id, e.getMessage(), e);
             }
         });
-        MQTT_CLIENT_MAP.clear();
+        clients.clear();
         // 清空订阅处理方法缓存
-        MqttSubscriber.destroy();
+        subscribers.clear();
         // 清空类型转换缓存
         MqttConversionService.destroy();
     }

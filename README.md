@@ -7,6 +7,9 @@ MQTT starter for Spring Boot, easier to use.
 > This document is machine translated.
 
 ## 0. 修改记录
+2023-11-23 `v2.0.1`
+1. 修改了bug 
+
 
 2023-11-06 `v2.0.0`
 1. 改了spring版本3.x, 重构了一下, 发送部分改了, 发送部分不兼容以前的版本了
@@ -14,15 +17,6 @@ MQTT starter for Spring Boot, easier to use.
 
 2023-03-16 `v1.3.0`
 1. `@MqttSubscribe` 注解添加嵌入参数支持（只有topic和client生效，详见`MqttSubscriber#afterInit`） #14, #15
-
-
-2022-11-23 `v1.2.8.1`
-1. fix bug #19
-
-2022-10-22 `v1.2.8`
-1. 修复对象与字节转换的bug, 优先使用自定义的转换类，如果无法转换，再使用Spring的转换类
-2. 新增内置String与对象互转的转换类，使用Jackson, 内置转换类不再使用匿名类
-3. 修复一个配置的bug
 
 ...
 
@@ -32,7 +26,7 @@ MQTT starter for Spring Boot, easier to use.
 <dependency>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 

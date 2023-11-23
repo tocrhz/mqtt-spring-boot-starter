@@ -16,6 +16,15 @@ import java.util.Set;
  */
 @SuppressWarnings("unused")
 public abstract class MqttConfigAdapter {
+
+    /**
+     * 默认的
+     */
+    public static MqttConfigAdapter defaultAdapter() {
+        return new MqttConfigAdapter() {
+        };
+    }
+
     protected MqttProperties mqttProperties;
 
     public final void setProperties(MqttProperties mqttProperties) {

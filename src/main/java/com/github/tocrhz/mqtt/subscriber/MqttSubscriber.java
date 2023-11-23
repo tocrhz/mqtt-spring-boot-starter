@@ -18,7 +18,7 @@ import java.util.*;
  */
 public class MqttSubscriber {
     private final static Logger log = LoggerFactory.getLogger(MqttSubscriber.class);
-    private static final LinkedList<MqttSubscriber> SUBSCRIBERS = new LinkedList<>();
+
     /**
      * 接收消息并处理
      *
@@ -66,16 +66,6 @@ public class MqttSubscriber {
         subscriber.handler = handler;
         subscriber.parameters = parameters;
         return subscriber;
-    }
-
-    public static LinkedList<MqttSubscriber> list(){
-        return SUBSCRIBERS;
-    }
-    public static void add(MqttSubscriber subscriber){
-        SUBSCRIBERS.add(subscriber);
-    }
-    public static void destroy(){
-        SUBSCRIBERS.clear();
     }
 
 

@@ -4,7 +4,6 @@ import com.github.tocrhz.mqtt.convert.MqttConversionService;
 import com.github.tocrhz.mqtt.properties.MqttConfigAdapter;
 import com.github.tocrhz.mqtt.properties.MqttProperties;
 import com.github.tocrhz.mqtt.publisher.MqttPublisher;
-import com.github.tocrhz.mqtt.publisher.SimpleMqttClient;
 import com.github.tocrhz.mqtt.subscriber.MqttSubscriber;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -17,6 +16,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+
+import java.util.LinkedList;
 
 /**
  * mqtt auto configuration
@@ -46,8 +47,7 @@ public class MqttAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(MqttConfigAdapter.class)
     public MqttConfigAdapter mqttConfigAdapter() {
-        return new MqttConfigAdapter() {
-        };
+        return MqttConfigAdapter.defaultAdapter();
     }
 
     /**
@@ -60,18 +60,22 @@ public class MqttAutoConfiguration {
      * @return MqttConnector
      */
     @Bean
-    public MqttClientManager mqttClientManager(MqttProperties properties, MqttConfigAdapter adapter) {
+    @Order
+    @ConditionalOnMissingBean(MqttClientManager.class)
+    public MqttClientManager mqttClientManager(MqttSubscribeProcessor processor, MqttProperties properties, MqttConfigAdapter adapter) {
+
+        LinkedList<MqttSubscriber> subscribers = processor.getSubscribers();
         // init property before connected.
-        adapter.beforeResolveEmbeddedValue(MqttSubscriber.list());
-        for (MqttSubscriber subscriber : MqttSubscriber.list()) {
+        adapter.beforeResolveEmbeddedValue(subscribers);
+        for (MqttSubscriber subscriber : subscribers) {
             subscriber.resolveEmbeddedValue(factory);
         }
-        adapter.afterResolveEmbeddedValue(MqttSubscriber.list());
-        MqttClientManager manager = new MqttClientManager(properties, adapter);
+        adapter.afterResolveEmbeddedValue(subscribers);
+        MqttClientManager manager = new MqttClientManager(subscribers, properties, adapter);
         // 将mqtt客户端添加进去
         properties.forEach(manager::clientNew);
         // 建立连接
-        SimpleMqttClient.scheduled.execute(manager::afterInit);
+        manager.afterInit();
         return manager;
     }
 
@@ -82,6 +86,7 @@ public class MqttAutoConfiguration {
      * @return MqttPublisher
      */
     @Bean
+    @Order
     @ConditionalOnMissingBean(MqttPublisher.class)
     public MqttPublisher mqttPublisher(MqttClientManager manager) {
         return new MqttPublisher(manager);
