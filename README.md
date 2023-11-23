@@ -178,13 +178,15 @@ public class JacksonPayloadSerialize implements PayloadSerialize {
 通过 `MqttConfigurer` 抽象类, 可以在创建客户端前, 连接前, 订阅前自定义操作.
 
 ```java
+import com.github.tocrhz.mqtt.properties.MqttClientRegistry;
+import com.github.tocrhz.mqtt.properties.MqttConfigAdapter;
 import com.github.tocrhz.mqtt.subscriber.MqttSubscriber;
 import com.github.tocrhz.mqtt.subscriber.SubscriberModel;
 
 import java.lang.reflect.Method;
 
 @Component
-public class MyMqttConfigurer extends MqttConfigurer {
+public class MyMqttConfigurer extends MqttConfigAdapter {
 
     /**
      * 在处理嵌入参数之后
@@ -204,7 +206,7 @@ public class MyMqttConfigurer extends MqttConfigurer {
      * 在创建客户端之前, 增删改客户端配置.
      * <p>清除的原有客户端, 增加客户端 "client01" </p>
      */
-    public void beforeCreate(ClientRegistry registry) {
+    public void beforeCreate(MqttClientRegistry registry) {
         registry.clear();
         registry.add("client01", "tcp://localhost:1883");
     }
@@ -214,10 +216,10 @@ public class MyMqttConfigurer extends MqttConfigurer {
      * 创建客户端.
      *
      * @param clientId 客户端ID
-     * @param options  MqttConnectOptions
+     * @param serverURIs broker地址
      */
-    public IMqttAsyncClient postCreate(String clientId, MqttConnectOptions options)  {
-        return new MqttAsyncClient(options.getServerURIs()[0], clientId, new MemoryPersistence());
+    public IMqttAsyncClient postCreate(String clientId, String[] serverURIs) {
+        return new MqttAsyncClient(serverURIs[0], clientId, new MemoryPersistence());
     }
 
     /**

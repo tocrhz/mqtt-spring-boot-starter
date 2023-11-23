@@ -4,7 +4,6 @@ import com.github.tocrhz.mqtt.convert.MqttConversionService;
 import com.github.tocrhz.mqtt.properties.MqttConfigAdapter;
 import com.github.tocrhz.mqtt.properties.MqttProperties;
 import com.github.tocrhz.mqtt.publisher.MqttPublisher;
-import com.github.tocrhz.mqtt.subscriber.MqttSubscriber;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -16,8 +15,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-
-import java.util.LinkedList;
 
 /**
  * mqtt auto configuration
@@ -32,12 +29,9 @@ import java.util.LinkedList;
 @Configuration
 public class MqttAutoConfiguration {
 
-    private final ConfigurableBeanFactory factory;
-
-    public MqttAutoConfiguration(ListableBeanFactory beanFactory, ConfigurableBeanFactory factory) {
+    public MqttAutoConfiguration(ListableBeanFactory beanFactory) {
         // register converters
         MqttConversionService.addBeans(beanFactory);
-        this.factory = factory;
     }
 
 
@@ -61,22 +55,8 @@ public class MqttAutoConfiguration {
      */
     @Bean
     @Order
-    @ConditionalOnMissingBean(MqttClientManager.class)
-    public MqttClientManager mqttClientManager(MqttSubscribeProcessor processor, MqttProperties properties, MqttConfigAdapter adapter) {
-
-        LinkedList<MqttSubscriber> subscribers = processor.getSubscribers();
-        // init property before connected.
-        adapter.beforeResolveEmbeddedValue(subscribers);
-        for (MqttSubscriber subscriber : subscribers) {
-            subscriber.resolveEmbeddedValue(factory);
-        }
-        adapter.afterResolveEmbeddedValue(subscribers);
-        MqttClientManager manager = new MqttClientManager(subscribers, properties, adapter);
-        // 将mqtt客户端添加进去
-        properties.forEach(manager::clientNew);
-        // 建立连接
-        manager.afterInit();
-        return manager;
+    public MqttClientManager mqttClientManager(MqttProperties properties, MqttConfigAdapter adapter, ConfigurableBeanFactory factory) {
+        return new MqttClientManager(properties, adapter, factory);
     }
 
 

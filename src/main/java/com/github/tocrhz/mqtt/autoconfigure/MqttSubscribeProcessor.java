@@ -22,14 +22,10 @@ import java.util.LinkedList;
 @ConditionalOnProperty(prefix = "mqtt", name = "disable", havingValue = "false", matchIfMissing = true)
 public class MqttSubscribeProcessor implements BeanPostProcessor {
 
-    private final LinkedList<MqttSubscriber> subscribers = new LinkedList<>();
+    private static final LinkedList<MqttSubscriber> subscribers = new LinkedList<>();
 
-    public LinkedList<MqttSubscriber> getSubscribers() {
+    public static LinkedList<MqttSubscriber> subscribers() {
         return subscribers;
-    }
-
-    public void add(MqttSubscriber subscriber) {
-        subscribers.add(subscriber);
     }
 
     @Override
@@ -38,7 +34,7 @@ public class MqttSubscribeProcessor implements BeanPostProcessor {
         for (Method method : methods) {
             if (method.isAnnotationPresent(MqttSubscribe.class)) {
                 SubscriberModel model = SubscriberModel.of(method.getAnnotation(MqttSubscribe.class));
-                add(MqttSubscriber.of(model, bean, method));
+                subscribers.add(MqttSubscriber.of(model, bean, method));
             }
         }
         return bean;

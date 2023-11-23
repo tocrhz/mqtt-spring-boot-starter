@@ -12,6 +12,9 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -22,18 +25,20 @@ import java.util.LinkedList;
  * 客户端连接管理一下
  */
 @SuppressWarnings("unused")
-public class MqttClientManager implements DisposableBean {
+public class MqttClientManager implements DisposableBean, ApplicationListener<ContextRefreshedEvent> {
     private final static Logger log = LoggerFactory.getLogger(MqttClientManager.class);
     private final LinkedHashMap<String, SimpleMqttClient> clients = new LinkedHashMap<>();
     private final LinkedList<MqttSubscriber> subscribers;
     private final MqttProperties properties;
     private final MqttConfigAdapter adapter;
+    private final ConfigurableBeanFactory factory;
     private String defaultClientId = null;
 
-    public MqttClientManager(LinkedList<MqttSubscriber> subscribers, MqttProperties properties, MqttConfigAdapter adapter) {
+    public MqttClientManager(MqttProperties properties, MqttConfigAdapter adapter, ConfigurableBeanFactory factory) {
         this.properties = properties;
-        this.subscribers = subscribers;
         this.adapter = adapter;
+        this.subscribers = MqttSubscribeProcessor.subscribers();
+        this.factory = factory;
         adapter.setProperties(properties);
     }
 
@@ -146,5 +151,24 @@ public class MqttClientManager implements DisposableBean {
         subscribers.clear();
         // 清空类型转换缓存
         MqttConversionService.destroy();
+    }
+
+    void resolveEmbeddedValueTopic() {
+        // init property before connected.
+        adapter.beforeResolveEmbeddedValue(subscribers);
+        for (MqttSubscriber subscriber : subscribers) {
+            subscriber.resolveEmbeddedValue(factory);
+        }
+        adapter.afterResolveEmbeddedValue(subscribers);
+    }
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        // 配置
+        resolveEmbeddedValueTopic();
+        // 将mqtt客户端添加进去
+        properties.forEach(this::clientNew);
+        // 建立连接
+        afterInit();
     }
 }
