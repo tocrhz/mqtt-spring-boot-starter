@@ -13,8 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -25,7 +25,7 @@ import java.util.LinkedList;
  * 客户端连接管理一下
  */
 @SuppressWarnings("unused")
-public class MqttClientManager implements DisposableBean, ApplicationListener<ContextRefreshedEvent> {
+public class MqttClientManager implements DisposableBean, ApplicationListener<ApplicationReadyEvent> {
     private final static Logger log = LoggerFactory.getLogger(MqttClientManager.class);
     private final LinkedHashMap<String, SimpleMqttClient> clients = new LinkedHashMap<>();
     private final LinkedList<MqttSubscriber> subscribers;
@@ -163,7 +163,7 @@ public class MqttClientManager implements DisposableBean, ApplicationListener<Co
     }
 
     @Override
-    public void onApplicationEvent(ContextRefreshedEvent event) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         // 配置
         resolveEmbeddedValueTopic();
         // 将mqtt客户端添加进去
