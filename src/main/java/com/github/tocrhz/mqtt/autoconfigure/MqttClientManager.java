@@ -63,9 +63,6 @@ public class MqttClientManager implements DisposableBean, ApplicationListener<Ap
 
     public SimpleMqttClient clientNew(String clientId, MqttConnectOptions options, Integer defaultPublishQos) {
         Assert.hasText(clientId, "clientId is required.");
-        if (clients.containsKey(clientId)) {
-            clientClose(clientId);
-        }
         // 创建客户端
         IMqttAsyncClient client;
         try {
@@ -79,13 +76,25 @@ public class MqttClientManager implements DisposableBean, ApplicationListener<Ap
         int qos = defaultPublishQos != null ? defaultPublishQos : this.properties.getDefaultPublishQos(clientId);
         // 创建客户端对象
         SimpleMqttClient smc = new SimpleMqttClient(clientId, client, options, enableShared, qos, subscribers, adapter);
+        // 先断开连接
+        if (clients.containsKey(clientId)) {
+            this.clientClose(clientId, true);
+        }
         clients.put(clientId, smc);
+        // 如果没有默认，则设置默认
+        if (defaultClientId == null) {
+            defaultClientId = clientId;
+        }
         return smc;
     }
 
     public void clientClose(String clientId) {
+        this.clientClose(clientId, false);
+    }
+
+    private void clientClose(String clientId, boolean reconnect) {
         if (clients.containsKey(clientId)) {
-            if (defaultClientId != null && defaultClientId.equals(clientId)) {
+            if (!reconnect && defaultClientId != null && defaultClientId.equals(clientId)) {
                 String oldDefault = defaultClientId;
                 String newDefault = null;
                 for (SimpleMqttClient value : clients.values()) {
@@ -125,9 +134,6 @@ public class MqttClientManager implements DisposableBean, ApplicationListener<Ap
         // 初始化完成后，全部建立连接
         clients.forEach((id, client) -> {
             try {
-                if (defaultClientId == null) {
-                    defaultClientId = id;
-                }
                 client.connect();
             } catch (Exception e) {
                 log.error("mqtt client '{}' close error: {}", id, e.getMessage(), e);
