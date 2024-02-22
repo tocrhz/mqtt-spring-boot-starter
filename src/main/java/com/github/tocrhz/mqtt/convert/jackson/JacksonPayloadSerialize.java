@@ -19,12 +19,18 @@ public class JacksonPayloadSerialize implements PayloadSerialize {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * 对象转json字符串并转为byte[]
+     *
+     * @param source the source object to convert, which must be an instance of {@code S} (never {@code null})
+     * @return byte[]
+     */
     @Override
     public byte[] convert(Object source) {
         try {
             if (source instanceof byte[]) {
                 return (byte[]) source;
-            }else if (source instanceof String){
+            } else if (source instanceof String) {
                 return ((String) source).getBytes(StandardCharsets.UTF_8);
             }
             return objectMapper.writeValueAsBytes(source);

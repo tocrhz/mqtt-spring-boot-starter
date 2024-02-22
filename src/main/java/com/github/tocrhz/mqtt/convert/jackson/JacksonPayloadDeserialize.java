@@ -21,6 +21,13 @@ public class JacksonPayloadDeserialize implements PayloadDeserialize {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * 获取转换方法
+     *
+     * @param targetType the target type to convert to
+     * @param <T>        目标类型
+     * @return target type object
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> Converter<byte[], T> getConverter(Class<T> targetType) {
@@ -28,7 +35,7 @@ public class JacksonPayloadDeserialize implements PayloadDeserialize {
             try {
                 if (targetType == byte[].class) {
                     return (T) source;
-                }else if (targetType == String.class) {
+                } else if (targetType == String.class) {
                     return (T) new String(source, StandardCharsets.UTF_8);
                 }
                 return objectMapper.readValue(source, targetType);

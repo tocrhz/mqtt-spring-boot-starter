@@ -17,6 +17,12 @@ public class JacksonStringSerialize implements Converter<Object, String> {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * 对象转json
+     *
+     * @param source the source object to convert, which must be an instance of {@code S} (never {@code null})
+     * @return json
+     */
     @Override
     public String convert(Object source) {
         try {

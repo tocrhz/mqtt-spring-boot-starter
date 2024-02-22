@@ -21,6 +21,13 @@ public class JacksonStringDeserialize implements ConverterFactory<String, Object
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * 获取转换方法
+     *
+     * @param targetType the target type to convert to
+     * @param <T>        目标类型
+     * @return target type object
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> Converter<String, T> getConverter(Class<T> targetType) {
@@ -28,7 +35,7 @@ public class JacksonStringDeserialize implements ConverterFactory<String, Object
             try {
                 if (targetType == byte[].class) {
                     return (T) source.getBytes(StandardCharsets.UTF_8);
-                }else if (targetType == String.class) {
+                } else if (targetType == String.class) {
                     return (T) source;
                 }
                 return objectMapper.readValue(source, targetType);
