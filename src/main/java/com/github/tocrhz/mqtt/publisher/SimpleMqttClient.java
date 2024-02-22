@@ -17,19 +17,69 @@ import java.util.stream.Collectors;
 
 /**
  * 简单封装下客户端
- *
- * @param id           客户端ID
- * @param client       客户端
- * @param options      连接选项
- * @param enableShared 是否支持共享订阅
- * @param qos          默认的发布QOS
- * @param subscribers  处理消息的方法集合
- * @param adapter      扩展
  */
-public record SimpleMqttClient(String id, IMqttAsyncClient client, MqttConnectOptions options
-        , boolean enableShared, int qos
-        , LinkedList<MqttSubscriber> subscribers
-        , MqttConfigAdapter adapter) {
+public class SimpleMqttClient {
+
+    private final String id;
+    private final IMqttAsyncClient client;
+    private final MqttConnectOptions options;
+    private final boolean enableShared;
+    private final int qos;
+    private final LinkedList<MqttSubscriber> subscribers;
+    private final MqttConfigAdapter adapter;
+
+    public String id() {
+        return this.id;
+    }
+
+    public IMqttAsyncClient client() {
+        return this.client;
+    }
+
+    public MqttConnectOptions options() {
+        return this.options;
+    }
+
+    public boolean enableShared() {
+        return this.enableShared;
+    }
+
+    public int qos() {
+        return this.qos;
+    }
+
+    public LinkedList<MqttSubscriber> subscribers() {
+        return this.subscribers;
+    }
+
+    public MqttConfigAdapter adapter() {
+        return this.adapter;
+    }
+
+    /**
+     * 简单封装下客户端
+     *
+     * @param id           客户端ID
+     * @param client       客户端
+     * @param options      连接选项
+     * @param enableShared 是否支持共享订阅
+     * @param qos          默认的发布QOS
+     * @param subscribers  处理消息的方法集合
+     * @param adapter      扩展
+     */
+    public SimpleMqttClient(String id, IMqttAsyncClient client, MqttConnectOptions options
+            , boolean enableShared, int qos
+            , LinkedList<MqttSubscriber> subscribers
+            , MqttConfigAdapter adapter) {
+        this.id = id;
+        this.client = client;
+        this.options = options;
+        this.enableShared = enableShared;
+        this.qos = qos;
+        this.subscribers = subscribers;
+        this.adapter = adapter;
+    }
+
     private static final Logger log = LoggerFactory.getLogger(SimpleMqttClient.class);
     private static final ScheduledExecutorService scheduled = Executors.newSingleThreadScheduledExecutor();
 
@@ -204,7 +254,7 @@ public record SimpleMqttClient(String id, IMqttAsyncClient client, MqttConnectOp
      * @throws NullPointerException     if client not exists
      */
     public void send(String topic, Object payload, int qos, boolean retained, IMqttActionListener callback) {
-        Assert.isTrue(topic != null && !topic.isBlank(), "topic cannot be blank.");
+        Assert.isTrue(topic != null && !topic.isEmpty(), "topic cannot be blank.");
         byte[] bytes = MqttConversionService.getSharedInstance().toBytes(payload);
         if (bytes == null) {
             return;

@@ -7,7 +7,6 @@ import org.springframework.util.StringUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
@@ -166,7 +165,7 @@ public class MqttProperties extends MqttConnectionProperties {
     private <T> T mergeValue(T parentValue, T targetValue, T defaultValue) {
         if (parentValue == null && targetValue == null) {
             return defaultValue;
-        } else return Objects.requireNonNullElse(targetValue, parentValue);
+        } else return (targetValue == null ? parentValue : targetValue);
     }
 
     public boolean isEnableSharedSubscription(String clientId) {

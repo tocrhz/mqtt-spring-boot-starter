@@ -54,7 +54,7 @@ public class TopicPair {
     private static Pattern toPattern(String topic, LinkedList<TopicParam> params, HashMap<String, Class<?>> paramTypeMap) {
         String pattern = replaceSymbols(topic);
         Matcher matcher = TO_PATTERN.matcher(pattern);
-        StringBuilder builder = new StringBuilder("^");
+        StringBuffer builder = new StringBuffer("^");
         int group = 1;
         while (matcher.find()) {
             String paramName = matcher.group(1);
@@ -79,7 +79,7 @@ public class TopicPair {
 
     public String getTopic(boolean enableShare) {
         if (enableShare) {
-            if (this.group != null && !this.group.isBlank()) {
+            if (this.group != null && !this.group.isEmpty()) {
                 return "$share/" + this.group + "/" + this.topic;
             }
         }

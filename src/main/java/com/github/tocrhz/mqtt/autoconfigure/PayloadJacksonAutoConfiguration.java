@@ -113,7 +113,7 @@ public class PayloadJacksonAutoConfiguration {
             addDeserializer(Date.class, DATE_JSON_DESERIALIZER);
         }
 
-        private final static JsonSerializer<LocalDateTime> LOCAL_DATE_TIME_JSON_SERIALIZER = new JsonSerializer<>() {
+        private final static JsonSerializer<LocalDateTime> LOCAL_DATE_TIME_JSON_SERIALIZER = new JsonSerializer<LocalDateTime>() {
             @Override
             public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
                 if (value == null) {
@@ -123,7 +123,7 @@ public class PayloadJacksonAutoConfiguration {
                 }
             }
         };
-        private final static JsonSerializer<LocalDate> LOCAL_DATE_JSON_SERIALIZER = new JsonSerializer<>() {
+        private final static JsonSerializer<LocalDate> LOCAL_DATE_JSON_SERIALIZER = new JsonSerializer<LocalDate>() {
 
             @Override
             public void serialize(LocalDate value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
@@ -134,7 +134,7 @@ public class PayloadJacksonAutoConfiguration {
                 }
             }
         };
-        private final static JsonSerializer<LocalTime> LOCAL_TIME_JSON_SERIALIZER = new JsonSerializer<>() {
+        private final static JsonSerializer<LocalTime> LOCAL_TIME_JSON_SERIALIZER = new JsonSerializer<LocalTime>() {
 
             @Override
             public void serialize(LocalTime value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
@@ -145,7 +145,7 @@ public class PayloadJacksonAutoConfiguration {
                 }
             }
         };
-        private final static JsonSerializer<Date> DATE_JSON_SERIALIZER = new JsonSerializer<>() {
+        private final static JsonSerializer<Date> DATE_JSON_SERIALIZER = new JsonSerializer<Date>() {
 
             @Override
             public void serialize(Date value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
@@ -157,7 +157,7 @@ public class PayloadJacksonAutoConfiguration {
             }
         };
 
-        private final static JsonDeserializer<LocalDateTime> LOCAL_DATE_TIME_JSON_DESERIALIZER = new JsonDeserializer<>() {
+        private final static JsonDeserializer<LocalDateTime> LOCAL_DATE_TIME_JSON_DESERIALIZER = new JsonDeserializer<LocalDateTime>() {
             @Override
             public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
                 String value = p.getValueAsString();
@@ -167,7 +167,7 @@ public class PayloadJacksonAutoConfiguration {
                 return null;
             }
         };
-        private final static JsonDeserializer<LocalDate> LOCAL_DATE_JSON_DESERIALIZER = new JsonDeserializer<>() {
+        private final static JsonDeserializer<LocalDate> LOCAL_DATE_JSON_DESERIALIZER = new JsonDeserializer<LocalDate>() {
             @Override
             public LocalDate deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
                 String value = p.getValueAsString();
@@ -177,7 +177,7 @@ public class PayloadJacksonAutoConfiguration {
                 return null;
             }
         };
-        private final static JsonDeserializer<LocalTime> LOCAL_TIME_JSON_DESERIALIZER = new JsonDeserializer<>() {
+        private final static JsonDeserializer<LocalTime> LOCAL_TIME_JSON_DESERIALIZER = new JsonDeserializer<LocalTime>() {
             @Override
             public LocalTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
                 String value = p.getValueAsString();
@@ -187,7 +187,7 @@ public class PayloadJacksonAutoConfiguration {
                 return null;
             }
         };
-        private final static JsonDeserializer<Date> DATE_JSON_DESERIALIZER = new JsonDeserializer<>() {
+        private final static JsonDeserializer<Date> DATE_JSON_DESERIALIZER = new JsonDeserializer<Date>() {
             @Override
             public Date deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
                 String value = p.getValueAsString();
