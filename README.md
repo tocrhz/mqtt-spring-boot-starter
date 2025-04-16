@@ -7,6 +7,10 @@ MQTT starter for Spring Boot, easier to use.
 > This document is machine translated.
 
 ## 0. 修改记录
+2023-11-23 `v2.0.3`
+1. 修改了bug
+
+
 2023-11-23 `v2.0.1`
 1. 修改了bug 
 
@@ -26,7 +30,7 @@ MQTT starter for Spring Boot, easier to use.
 <dependency>
     <groupId>com.github.tocrhz</groupId>
     <artifactId>mqtt-spring-boot-starter</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.3</version>
 </dependency>
 ```
 
