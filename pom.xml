@@ -42,7 +42,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
-            <version>3.1.5</version>
+            <version>3.3.12</version>
             <optional>true</optional>
         </dependency>
         <!-- optional: configuration-processor -->
