@@ -18,8 +18,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 
 /**
  * 客户端连接管理一下
@@ -28,7 +28,7 @@ import java.util.LinkedList;
 public class MqttClientManager implements DisposableBean, ApplicationListener<ApplicationReadyEvent> {
     private final static Logger log = LoggerFactory.getLogger(MqttClientManager.class);
     private final LinkedHashMap<String, SimpleMqttClient> clients = new LinkedHashMap<>();
-    private final LinkedList<MqttSubscriber> subscribers;
+    private final ArrayList<MqttSubscriber> subscribers;
     private final MqttProperties properties;
     private final MqttConfigAdapter adapter;
     private final ConfigurableBeanFactory factory;
@@ -168,13 +168,19 @@ public class MqttClientManager implements DisposableBean, ApplicationListener<Ap
         adapter.afterResolveEmbeddedValue(subscribers);
     }
 
+    public boolean disable(){
+        return properties.getDisable() != null && properties.getDisable();
+    }
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        // 配置
-        resolveEmbeddedValueTopic();
-        // 将mqtt客户端添加进去
-        properties.forEach(this::clientNew);
-        // 建立连接
-        afterInit();
+        if (!disable()) {
+            // 配置
+            resolveEmbeddedValueTopic();
+            // 将mqtt客户端添加进去
+            properties.forEach(this::clientNew);
+            // 建立连接
+            afterInit();
+        }
     }
 }

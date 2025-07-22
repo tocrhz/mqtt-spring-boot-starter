@@ -25,7 +25,7 @@ public class SimpleMqttClient {
     private final MqttConnectOptions options;
     private final boolean enableShared;
     private final int qos;
-    private final LinkedList<MqttSubscriber> subscribers;
+    private final ArrayList<MqttSubscriber> subscribers;
     private final MqttConfigAdapter adapter;
 
     public String id() {
@@ -48,7 +48,7 @@ public class SimpleMqttClient {
         return this.qos;
     }
 
-    public LinkedList<MqttSubscriber> subscribers() {
+    public ArrayList<MqttSubscriber> subscribers() {
         return this.subscribers;
     }
 
@@ -69,7 +69,7 @@ public class SimpleMqttClient {
      */
     public SimpleMqttClient(String id, IMqttAsyncClient client, MqttConnectOptions options
             , boolean enableShared, int qos
-            , LinkedList<MqttSubscriber> subscribers
+            , ArrayList<MqttSubscriber> subscribers
             , MqttConfigAdapter adapter) {
         this.id = id;
         this.client = client;

@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 /**
  * When Bean is initialized, filter out the methods annotated with @MqttSubscribe, and create MqttSubscriber
@@ -22,9 +22,9 @@ import java.util.LinkedList;
 @ConditionalOnProperty(prefix = "mqtt", name = "disable", havingValue = "false", matchIfMissing = true)
 public class MqttSubscribeProcessor implements BeanPostProcessor {
 
-    private static final LinkedList<MqttSubscriber> subscribers = new LinkedList<>();
+    private static final ArrayList<MqttSubscriber> subscribers = new ArrayList<>();
 
-    public static LinkedList<MqttSubscriber> subscribers() {
+    public static ArrayList<MqttSubscriber> subscribers() {
         return subscribers;
     }
 

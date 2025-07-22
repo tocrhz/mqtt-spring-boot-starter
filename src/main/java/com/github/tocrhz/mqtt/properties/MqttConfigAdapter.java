@@ -8,6 +8,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Set;
 
@@ -37,7 +38,7 @@ public abstract class MqttConfigAdapter {
      * 在处理注解内参数之前.
      * 程序启动后执行，只会执行一次
      */
-    public void beforeResolveEmbeddedValue(LinkedList<MqttSubscriber> subscribers) {
+    public void beforeResolveEmbeddedValue(ArrayList<MqttSubscriber> subscribers) {
 
     }
 
@@ -45,7 +46,7 @@ public abstract class MqttConfigAdapter {
      * 在处理注解内参数之后.
      * 程序启动后执行，只会执行一次
      */
-    public void afterResolveEmbeddedValue(LinkedList<MqttSubscriber> subscribers) {
+    public void afterResolveEmbeddedValue(ArrayList<MqttSubscriber> subscribers) {
 
     }
 
